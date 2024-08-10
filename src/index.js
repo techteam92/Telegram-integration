@@ -26,7 +26,6 @@ const indexFunction = () => {
           logger.info(`Listening to port ${config.port}`);
           logger.info(`Server URL: ${config.url}/api/v1`);
         });
-        bot.start()
       }
     })
     .catch(err => {

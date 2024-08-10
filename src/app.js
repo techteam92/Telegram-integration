@@ -29,7 +29,7 @@ if (config.env === constant.PROD_DEV_ENV) {
   app.use('/v1/auth', authLimiter);
 }
 
-// app.use('/api', api);
+app.use('/api', api);
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Route not found'));
 });
