@@ -1,0 +1,97 @@
+{
+    "internalServerError": "Internal server error.",
+    "invalidData": "Invalid data.",
+    "notFound": "{name} not found.",
+    "invalid":"Invalid {name}.",
+    "invalidId": "Given id is invalid.",
+    "Unauthorized" : "Unauthorized user",
+    "token": {
+        "generated": "access token generated successfully",
+        "refreshTokenInvalid": "invalid refresh token",
+        "refreshTokenReq": "refresh token is required"
+    },
+    "user" : {
+        "created" : "User registered successfully.",
+        "exists" : "This email already exists.",
+        "fetched": "User fetched successfully",
+        "updated": "User updated successfully",
+        "settings": "User settings fetched successfully",
+        "settingsUpdated": "User settings updated successfully",
+        "loggedIn": "User logged in successfully",
+        "profiles": "User's profiles fetched successfully",
+        "alreadySignedUp": "User has already signed up",
+        "notFound" : "User not found",
+        "logout": "User logged out",
+        "deleted": "User data deleted"
+    },
+    "users": {
+        "fetched": "Users fetched successfully"
+    },
+    "profile": {
+        "fetched": "profile fetched sucessfully",
+        "notFound": "profile not found",
+        "updated" : "profile details updated successfully.",
+        "notExist": "profile doesn't exist",
+        "created" : "profile created successfully",
+        "offline" : "This user is offline.",
+        "invalidCallerType" : "Invalid caller data. call cannot be placed.",
+        "invalidResponderType" : "Invalid responder data.",
+        "urself": "Cannot follow yourself",
+        "deleted" : "profile profile deleted successfully."
+    },
+    "admin": {
+        "created": "Admin created successfully",
+        "loggedIn": "Admin logged in successfully",
+        "invalid": "Invalid email or password",
+        "unauthorized": "Unauthorized access",
+        "exists": "Admin with this email already exists"
+    },
+    "notification": {
+        "fetched": "All notification retrive successfully",
+        "readAll": "All notificaiton reads successfully",
+        "sent": "Notification sent successfully",
+        "exist": "This profile address doesn't exist in Dlicom, so notifications can't be sent"
+    },
+    "plug": {
+        "created": "plug created successfully",
+        "found": "plug found",
+        "notFound": "plug not found",
+        "alreadyLiked": "You already liked plug",
+        "liked": "You liked plug",
+        "unlike": "You unliked plug",
+        "alreadyShared": "You already shared plug",
+        "share": "plug shared successfully",
+        "comment": "Comment successfully added to plug",
+        "notSelfTag" : "User can not tag himself.",
+        "notFoundTagUser" : "One of tagged user not found.",
+        "seen": "plug is seen",
+        "plugRemoved": "plug removed successfully",
+        "commentRemove": "Comment remove successfully",
+        "commentnotFound": "Comment not found",
+        "updated": "plug updated successfully",
+        "commentUpdated": "Comments updated successfully",
+        "plugDeletedOrNotActive" : "plug deleted or not active",
+        "commentDeletedOrNotActive" : "Comment deleted or not active",
+        "alreadySeen" : "Already seen"
+     },
+    "contact": {
+        "invalid": "Invalid operation",
+        "exist": "You already follow this profile",
+        "followed": "Followed successfully",
+        "followers": "Followers fetched successfully",
+        "following": "Following fetched successfully",
+        "unfollowed": "profile unfollowed successfully",
+        "notFound" : "You didn't following this user"
+    },
+    "upload" : {
+        "uploaded" : "File uploaded successfully.",
+        "notUploaded" : "File not uploaded.",
+        "notFound" : "File not get."
+    },
+    "message" : {
+        "read" : "All message read successfully",
+        "readFail" : "Message Not found",
+        "clearChatSuccess" : "Chat history deleted successfully.",
+        "clearChatFailed" : "Chat history not found."
+    }
+} 
