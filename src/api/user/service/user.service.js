@@ -15,13 +15,13 @@ const getUserByTelegramId = async (telegramId) => {
   const user = await User.findOne({ telegramId });
   if (!user) {
     return false
-  }
+  } 
   return user;
 };
 
 const updateUserSubscriptionStatus = async (telegramId, status) => {
   const user = await getUserByTelegramId(telegramId);
-  user.subscription_status = status;
+  user.subscriptionStatus = status;
   await user.save();
   return user;
 };
@@ -33,7 +33,15 @@ const checkSubscriptionStatus = async (telegramId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  return user.subscription_status;
+  return user.subscriptionStatus;
+};
+
+const getUserByUsername = async (username) => {
+  const user = await User.findOne({ username: username });
+  if (!user) {
+      return null;
+  }
+  return user;
 };
 
 module.exports = {
@@ -41,4 +49,5 @@ module.exports = {
   getUserByTelegramId,
   updateUserSubscriptionStatus,
   checkSubscriptionStatus,
+  getUserByUsername
 };

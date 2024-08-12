@@ -6,57 +6,67 @@ const userService = require('../api/user/service/user.service');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 const adminTelegramId = '659928723'; 
-const paymentLink = 'https://buy.copperx.dev/payment/payment-link/0c4b9354-9ea3-4253-a824-e2cbe9c0a3e7';
+const paymentLink = 'https://buy.copperx.io/payment/payment-link/462bb3e8-fb93-4d3c-a3f2-288f20d47c14';
+
+const safeSendGroupMessage = async (chatId, text) => {
+    try {
+        await bot.sendMessage(chatId, text);
+    } catch (error) {
+        logger.error(`Error sending message to group ${chatId}: ${error.message}`);
+    }
+};
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const telegramId = msg.from.id.toString();
-    const username = msg.from.first_name || 'Anonymous';
+    const username = msg.from.username || 'Anonymous';
     try {
         if (telegramId === adminTelegramId) {
-            bot.sendMessage(chatId, "Hello, you are the admin.");
+            await safeSendGroupMessage(chatId, "Hello, you are the admin.");
             return;
         }
-
         let user = await userService.getUserByTelegramId(telegramId);
         if (!user) {
             user = await userService.createUser({ telegramId, username, subscriptionStatus: 'inactive' });
-            bot.sendMessage(telegramId, `Please subscribe to interact in groups: ${paymentLink}`);
+            logger.info(`New user added: ${username} with default inactive status.`);
         } else if (user.subscriptionStatus !== 'active') {
-            bot.sendMessage(telegramId, `You are not subscribed. Please use the following link to subscribe: ${paymentLink}`);
+            logger.info(`User ${username} is not subscribed.`);
         } else {
-            bot.sendMessage(chatId, 'Welcome back! You are already subscribed.');
+            logger.info(`User ${username} is already subscribed.`);
         }
     } catch (error) {
-        logger.error(`Error in /start command: ${error}`);
-        bot.sendMessage(chatId, 'There was an error processing your request.');
+        logger.error(`Error in /start command: ${error.message}`);
     }
 });
 
 bot.on('chat_member', async (msg) => {
     const chatId = msg.chat.id;
-    const newMember = msg.new_chat_member.user;
-    const userId = newMember.id.toString();
-    const username = newMember.first_name || 'Anonymous';
-    if(msg.new_chat_member.is_member){
-        logger.info(`${username} left the group`)
-        return
+    console.log(chatId)
+    const member = msg.new_chat_member;
+
+    if (!member) return;
+
+    const userId = member.user.id.toString();
+    const username = member.user.username || 'Anonymous';
+    if (['left', 'kicked'].includes(member.status) || (member.status === 'restricted' && !member.is_member)) {
+        logger.info(`${username} left or was kicked from the group.`);
+        return;
     }
+
     try {
         let user = await userService.getUserByTelegramId(userId);
         if (!user) {
-            user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive'});
+            user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive' });
             logger.info(`New user added: ${username} with default inactive status.`);
-            bot.sendMessage(userId, `Welcome ${username}! Please subscribe to interact in this group: ${paymentLink}`);
             restrictUser(chatId, userId);
         } else if (user.subscriptionStatus !== 'active') {
             restrictUser(chatId, userId);
-            bot.sendMessage(userId, `You need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
+            await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
         } else {
             allowUser(chatId, userId);
         }
     } catch (error) {
-        logger.error(`Error in chat_member handler: ${error}`);
+        logger.error(`Error in chat_member handler: ${error.message}`);
     }
 });
 
@@ -69,7 +79,7 @@ const restrictUser = (chatId, userId) => {
             can_add_web_page_previews: false,
         },
     }).catch(error => {
-        logger.error(`Error restricting user ${userId}: ${error}`);
+        logger.error(`Error restricting user ${userId}: ${error.message}`);
     });
 };
 
@@ -80,13 +90,18 @@ const allowUser = (chatId, userId) => {
         can_send_other_messages: true,
         can_add_web_page_previews: true,
     }).catch(error => {
-        logger.error(`Error allowing user ${userId}: ${error}`);
+        logger.error(`Error allowing user ${userId}: ${error.message}`);
     });
 };
 
+bot.onText(/\/subscribe/, async (msg) => {
+    const chatId = msg.chat.id;
+    const username = msg.from.username || 'Anonymous';
+    await safeSendGroupMessage(chatId, `${username}, subscribe using this link: ${paymentLink}`);
+});
+
 bot.on('polling_error', (error) => {
-    logger.error(`Polling error: ${error}`);
+    logger.error(`Polling error: ${error.message}`);
 });
 
 module.exports = bot;
-
