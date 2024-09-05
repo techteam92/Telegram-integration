@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const config = require('../common/config/config');
 const logger = require('../common/utils/logger');
 const userService = require('../api/user/service/user.service');
-
+const { connect, getLatestPriceData } = require('./websocket');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 const adminTelegramId = '659928723'; 
@@ -15,6 +15,50 @@ const safeSendGroupMessage = async (chatId, text) => {
         logger.error(`Error sending message to group ${chatId}: ${error.message}`);
     }
 };
+
+// connect();
+
+// const updatePriceMessage = async () => {
+//     const priceData = getLatestPriceData();
+//     let messageText = 'Latest Price Data:\n';
+//     for (const symbol in priceData) {
+//         const data = priceData[symbol];
+//         messageText += `${symbol}: Bid: ${data.bid}, Ask: ${data.ask}, Mid: ${data.mid}\n`;
+//     }
+
+//     if (messageId) {
+//         try {
+//             await bot.editMessageText(messageText, {
+//                 chat_id: chatId,
+//                 message_id: messageId,
+//             });
+//         } catch (error) {
+//             console.error('Error editing message:', error);
+//         }
+//     } else {
+//         try {
+//             const sentMessage = await bot.sendMessage(chatId, messageText);
+//             messageId = sentMessage.message_id;
+//         } catch (error) {
+//             console.error('Error sending initial message:', error);
+//         }
+//     }
+// };
+
+
+// setInterval(() => {
+//     const priceData = getLatestPriceData();
+//     if (priceData.GBPUSD) {
+//         const message = `GBP/USD Latest Price - Bid: ${priceData.GBPUSD.bid}, Ask: ${priceData.GBPUSD.ask}, Mid: ${priceData.GBPUSD.mid}`;
+//         safeSendGroupMessage(adminTelegramId, message);
+//     }
+//     if (priceData.EURUSD) {
+//         const message = `EUR/USD Latest Price - Bid: ${priceData.EURUSD.bid}, Ask: ${priceData.EURUSD.ask}, Mid: ${priceData.EURUSD.mid}`;
+//         safeSendGroupMessage(adminTelegramId, message);
+//     }
+// }, 3000);
+
+
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
@@ -30,6 +74,7 @@ bot.onText(/\/start/, async (msg) => {
             user = await userService.createUser({ telegramId, username, subscriptionStatus: 'inactive' });
             logger.info(`New user added: ${username} with default inactive status.`);
         } else if (user.subscriptionStatus !== 'active') {
+            await safeSendGroupMessage(chatId, "Hello, you are not subscribed to the forex trading group.");
             logger.info(`User ${username} is not subscribed.`);
         } else {
             logger.info(`User ${username} is already subscribed.`);
@@ -59,6 +104,7 @@ bot.on('chat_member', async (msg) => {
             user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive' });
             logger.info(`New user added: ${username} with default inactive status.`);
             restrictUser(chatId, userId);
+            await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
         } else if (user.subscriptionStatus !== 'active') {
             restrictUser(chatId, userId);
             await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);

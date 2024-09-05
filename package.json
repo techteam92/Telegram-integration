@@ -52,7 +52,7 @@
   ],
   "dependencies": {
     "aws-sdk": "^2.1654.0",
-    "axios": "^1.6.8",
+    "axios": "^1.7.4",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
     "cors": "^2.8.5",

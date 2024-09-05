@@ -15,6 +15,10 @@ const config = {
   get hashRound() {
     return process.env.HASH_ROUNDS;
   },
+  get copperxApikey() {
+    return process.env.COPPERXAPIKEY
+  }
+  ,
   get botToken() {
     return process.env.BOT_TOKEN
   },
