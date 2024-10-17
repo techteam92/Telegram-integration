@@ -63,8 +63,6 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 });
 
 
-
-
 const webhookRoutes = {
     path: '/webhook',
     router,

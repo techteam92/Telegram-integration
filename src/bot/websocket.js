@@ -36,7 +36,6 @@ const connect = () => {
     });
 };
 
-// Function to get the latest price data
 const getLatestPriceData = () => {
     return latestPriceData;
 };

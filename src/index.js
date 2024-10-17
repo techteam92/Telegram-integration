@@ -27,6 +27,8 @@ const indexFunction = () => {
           logger.info(`Server URL: ${config.url}/api/v1`);
         });
       }
+      const startCronJobs = require('./jobs/job')
+      startCronJobs()
     })
     .catch(err => {
       logger.error('Error connecting to MongoDB: ', err);
