@@ -3,9 +3,9 @@ const Signal = require('../models/signal.model');
 
 const fetchSignalData = async () => {
   try {
-    const response = await axios.get('http://145.223.120.95:8000/get-signal-data/GBPUSD/minute/10');
+    const response = await axios.get('http://145.223.120.95:8000/get-signal-data/GBPUSD/minute/30');
     const { status, signal } = response.data;
-
+    console.log(response.data);
     if (status === 'Success') {
       const signalData = signal[0]; 
       if (signalData.buy || signalData.sell) {
