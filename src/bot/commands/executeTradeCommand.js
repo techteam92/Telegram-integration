@@ -1,31 +1,22 @@
-const oandaService = require('../../api/oanda/services/oanda.service');
-const logger = require('../../common/utils/logger');
-
 module.exports = async (bot, msg) => {
-    const chatId = msg.chat.id;
+    const userChatId = msg.from.id;
     const telegramId = msg.from.id.toString();
-    
+
     try {
-        const userApiKeyInfo = await oandaService.getUserApiKey(telegramId);
-        
+        const userApiKeyInfo = await userService.getUserApiKey(telegramId);
+
         if (!userApiKeyInfo) {
-            await bot.sendMessage(chatId, "Please provide your OANDA API key. You can create one by logging into your OANDA account here: https://www.oanda.com/");
+            await bot.sendMessage(userChatId, "To execute trades, please set up your OANDA API key with /set_oanda_key command.");
             return;
         }
-        
-        const keyboard = {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Test Account', callback_data: 'test' }],
-                    [{ text: 'Live Account', callback_data: 'live' }]
-                ]
-            }
-        };
-        
-        await bot.sendMessage(chatId, "Please choose account type for executing the trade:", keyboard);
-        
+
+        const groupInviteLink = "https://t.me/LOLOLLAW";
+        await bot.sendMessage(
+            userChatId,
+            `To execute trades, join our trading signals group here: ${groupInviteLink}\n\nYou'll receive signals and can execute trades within 2 minutes of each signal for best results.`
+        );
     } catch (error) {
-        logger.error(`Error in /execute_trade: ${error.message}`);
-        await bot.sendMessage(chatId, "An error occurred. Please try again later.");
+        logger.error(`Error in /execute_trade command: ${error.message}`);
+        await bot.sendMessage(userChatId, "An error occurred. Please try again later.");
     }
 };

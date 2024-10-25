@@ -1,4 +1,5 @@
 const ApiError = require('../../../common/response/error');
+const logger = require('../../../common/utils/logger');
 const User = require('../model/user.model');
 const httpStatus = require('http-status');
 
@@ -36,6 +37,15 @@ const checkSubscriptionStatus = async (telegramId) => {
   return user.subscriptionStatus;
 };
 
+const getUserApiKey = async (telegramId) => {
+  const user = await User.findOne({ telegramId });
+  if (user && user.oandaApiKey) {
+    return { apiKey: user.oandaApiKey, accountType: user.oandaAccountType || 'test' };
+  } else {
+    return null;
+  }
+};
+
 const getUserByUsername = async (username) => {
   const user = await User.findOne({ username: username });
   if (!user) {
@@ -44,10 +54,17 @@ const getUserByUsername = async (username) => {
   return user;
 };
 
+const saveUserApiKey = async (telegramId, apiKey, accountType) => {
+  await User.updateOne({ telegramId }, { oandaApiKey: apiKey, oandaAccountType: accountType });
+  logger.info(`OANDA API key and account type saved for user ${telegramId}`);
+};
+
 module.exports = {
   createUser,
   getUserByTelegramId,
   updateUserSubscriptionStatus,
   checkSubscriptionStatus,
-  getUserByUsername
+  getUserByUsername,
+  saveUserApiKey,
+  getUserApiKey
 };

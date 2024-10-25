@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const userService = require('../user/service/user.service');
-const logger = require('../../common/utils/logger');
-const bot = require('../../bot/bot');
+const userService = require('../../user/service/user.service');
+const logger = require('../../../common/utils/logger');
+const bot = require('../../../bot/bot');
 
 router.post('/copperx', async (req, res) => {
     console.log(req.body); 
