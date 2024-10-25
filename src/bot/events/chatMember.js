@@ -3,6 +3,7 @@ const restrictUser = require('../utils/restrictUser');
 const allowUser = require('../utils/allowUser');
 const safeSendGroupMessage = require('../utils/safeSendGroupMessage');
 const userService = require('../../api/user/service/user.service');
+const paymentLink = 'https://buy.copperx.io/payment/payment-link/462bb3e8-fb93-4d3c-a3f2-288f20d47c14';
 
 module.exports = async (bot, msg) => {
     const chatId = msg.chat.id;
@@ -24,10 +25,11 @@ module.exports = async (bot, msg) => {
             user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive' });
             logger.info(`New user added: ${username} with default inactive status.`);
             await restrictUser(bot, chatId, userId);
-            await safeSendGroupMessage(bot, chatId, `Welcome ${username}, please subscribe to participate fully in this group.`);
+            await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
+            return
         } else if (user.subscriptionStatus !== 'active') {
             await restrictUser(bot, chatId, userId);
-            await safeSendGroupMessage(bot, chatId, `Welcome back, ${username}. Please subscribe to access this group.`);
+            await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
         } else {
             await allowUser(bot, chatId, userId);
         }
@@ -35,3 +37,5 @@ module.exports = async (bot, msg) => {
         logger.error(`Error in managing group member: ${error.message}`);
     }
 };
+
+

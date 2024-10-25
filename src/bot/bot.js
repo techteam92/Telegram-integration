@@ -7,6 +7,7 @@ const config = require('../common/config/config');
 const tradingSignalsCommand = require('./commands/tradingSignalsCommand');
 const oandaService = require('../api/oanda/services/oanda.service');
 const chatMember = require('./events/chatMember');
+const updateOandaAccountCommand = require('./commands/updateOandaAccountCommand');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 bot.setMyCommands([
@@ -20,6 +21,7 @@ bot.on('chat_member', (msg) => chatMember(bot, msg));
 
 bot.onText(/\/start/, (msg) => startCommand(bot, msg));
 bot.onText(/\/set_oanda_key/, (msg) => setOandaKeyCommand(bot, msg));
+bot.onText(/\/update_account/, (msg) => updateOandaAccountCommand(bot, msg));
 bot.onText(/\/execute_trade/, (msg) => executeTradeCommand(bot, msg));
 bot.onText(/\/trading_signals/, (msg) => tradingSignalsCommand(bot, msg));
 

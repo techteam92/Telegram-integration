@@ -59,6 +59,41 @@ const saveUserApiKey = async (telegramId, apiKey, accountType) => {
   logger.info(`OANDA API key and account type saved for user ${telegramId}`);
 };
 
+const saveUserAccountDetails = async (telegramId, apiKey, accountType, accountId) => {
+  try {
+      await User.updateOne(
+          { telegramId },
+          { oandaApiKey: apiKey, oandaAccountType: accountType, oandaAccountId: accountId },
+          { upsert: true }
+      );
+      logger.info(`OANDA details saved for user ${telegramId}`);
+  } catch (error) {
+      logger.error(`Failed to save OANDA details for user ${telegramId}: ${error.message}`);
+      throw new Error('Unable to save OANDA account details.');
+  }
+};
+
+const updateUserAccountId = async (telegramId, accountId) => {
+  try {
+      const user = await User.findOneAndUpdate(
+          { telegramId },
+          { oandaAccountId: accountId }, 
+          { new: true }
+      );
+      
+      if (!user) {
+          logger.error(`User with Telegram ID ${telegramId} not found.`);
+          throw new Error('User not found.');
+      }
+      
+      logger.info(`Updated account ID for user with Telegram ID ${telegramId}.`);
+      return user;
+  } catch (error) {
+      logger.error(`Failed to update account ID for user ${telegramId}: ${error.message}`);
+      throw error;
+  }
+};
+
 module.exports = {
   createUser,
   getUserByTelegramId,
@@ -66,5 +101,7 @@ module.exports = {
   checkSubscriptionStatus,
   getUserByUsername,
   saveUserApiKey,
-  getUserApiKey
+  getUserApiKey,
+  saveUserAccountDetails,
+  updateUserAccountId
 };

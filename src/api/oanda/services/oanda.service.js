@@ -1,5 +1,4 @@
 const axios = require('axios');
-const User = require('../../user/model/user.model');
 const logger = require('../../../common/utils/logger');
 const userService = require('../../user/service/user.service');
 
@@ -47,7 +46,24 @@ const validateOandaApiKey = async (apiKey, accountType) => {
   }
 };
 
+const fetchUserAccounts = async (apiKey, accountType) => {
+  const apiUrl = accountType === 'live' ? OANDA_LIVE_URL : OANDA_TEST_URL;
+
+  try {
+      const response = await axios.get(`${apiUrl}/accounts`, {
+          headers: {
+              'Authorization': `Bearer ${apiKey}`
+          }
+      });
+      return response.data.accounts;
+  } catch (error) {
+      logger.error(`Error fetching user accounts from OANDA: ${error.message}`);
+      throw new Error("Failed to fetch accounts. Please check your API key and try again.");
+  }
+};
+
 module.exports = {
   executeOandaTrade,
   validateOandaApiKey,
+  fetchUserAccounts
 };
