@@ -40,7 +40,7 @@ const checkSubscriptionStatus = async (telegramId) => {
 const getUserApiKey = async (telegramId) => {
   const user = await User.findOne({ telegramId });
   if (user && user.oandaApiKey) {
-    return { apiKey: user.oandaApiKey, accountType: user.oandaAccountType || 'test' };
+    return user;
   } else {
     return null;
   }

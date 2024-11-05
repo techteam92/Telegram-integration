@@ -5,18 +5,13 @@ const userService = require('../../user/service/user.service');
 const OANDA_TEST_URL = 'https://api-fxpractice.oanda.com/v3';
 const OANDA_LIVE_URL = 'https://api-fxtrade.oanda.com/v3';
 
-const executeOandaTrade = async (telegramId, tradeData) => {
-  const userInfo = await userService.getUserApiKey(telegramId);
-  if (!userInfo) {
-    throw new Error("API key not found. Please provide your OANDA API key.");
-  }
-
-  const { apiKey, accountType } = userInfo;
+const executeOandaTrade = async (apiKey, accountType, oandaAccountId, tradeData) => {
   const apiUrl = accountType === 'live' ? OANDA_LIVE_URL : OANDA_TEST_URL;
-  const accountID = tradeData.accountID; 
-  
+  console.log('oanda account:', oandaAccountId);
   try {
-    const response = await axios.post(`${apiUrl}/accounts/${accountID}/orders`, tradeData, {
+    const response = await axios.post(`${apiUrl}/accounts/${oandaAccountId}/orders`, {
+      order: tradeData
+    }, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
@@ -24,12 +19,10 @@ const executeOandaTrade = async (telegramId, tradeData) => {
     });
     return response.data;
   } catch (error) {
-    console.log("Error executing trade:", error); 
-    logger.error(`Error executing trade: ${error}`);
+    logger.error(`Error executing trade: ${error.response?.data?.errorMessage}`);
     throw error;
   }
 };
-
 const validateOandaApiKey = async (apiKey, accountType) => {
   const apiUrl = accountType === 'live' ? OANDA_LIVE_URL : OANDA_TEST_URL;
   try {

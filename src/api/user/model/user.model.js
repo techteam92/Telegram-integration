@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['test', 'live'],
         default: null,
+    },
+    oandaAccountId: {
+        type: String,
+        default: null,
     }
 }, {
     timestamps: true,

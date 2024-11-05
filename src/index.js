@@ -45,19 +45,19 @@ const indexFunction = () => {
     }
   };
 
-  const unexpectedErrorHandler = (error) => {
-    logger.error(error);
+  process.on('uncaughtException', (error) => {
+    logger.error(`Uncaught Exception: ${error.message}`, { stack: error.stack });
     exitHandler();
-  };
+  });
 
-  process.on('uncaughtException', unexpectedErrorHandler);
-  process.on('unhandledRejection', unexpectedErrorHandler);
+  process.on('unhandledRejection', (error) => {
+    logger.error(`Unhandled Rejection: ${error.message}`, { stack: error.stack });
+    exitHandler();
+  });
 
   process.on('SIGTERM', () => {
     logger.info('SIGTERM received');
-    if (server) {
-      server.close();
-    }
+    if (server) server.close();
   });
 };
 
