@@ -5,7 +5,7 @@ const bot = require('../bot/bot');
 const chatId = '-1002212869845';
 
 function startCronJobs() {
-  cron.schedule('*/1 * * * *', async () => {
+  cron.schedule('*/5 * * * *', async () => {
     console.log('Running cron job...');
     const signal = await fetchSignalData();
     console.log('Signal:', signal);
@@ -21,18 +21,19 @@ function startCronJobs() {
         Strategy: ${signal.strategyName}`;
 
       const tradeType = signal.buy ? 'buy' : 'sell';
-
+      console.log('Trade Type:', tradeType);
       const options = {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: 'Execute Trade', callback_data: `execute_trade_${signal.symbol}_${tradeType}_${signal.timestamp}`  }
+              { text: 'Execute Trade', callback_data: `execute_trade-${signal.symbol}-${tradeType}-${signal._id}`  }
             ]
           ]
         }
       };
+      console.log('Options:', options.reply_markup.inline_keyboard[0]); 
       await bot.sendMessage(chatId, message, options);
-    }
+   }
   });
 }
 

@@ -17,6 +17,7 @@ const executeOandaTrade = async (apiKey, accountType, oandaAccountId, tradeData)
         'Content-Type': 'application/json',
       },
     });
+    console.log('Trade executed successfully:', response.data);
     return response.data;
   } catch (error) {
     logger.error(`Error executing trade: ${error.response?.data?.errorMessage}`);

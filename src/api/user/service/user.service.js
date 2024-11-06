@@ -94,6 +94,17 @@ const updateUserAccountId = async (telegramId, accountId) => {
   }
 };
 
+const updateUserUnits = async (telegramId, units) => {
+  return User.findOneAndUpdate({ telegramId }, { units }, { new: true });
+};
+
+const removeUserAccountDetails = async (telegramId) => {
+  await User.updateOne(
+    { telegramId },
+    { $unset: { oandaApiKey: "", oandaAccountType: "", oandaAccountId: "" } }
+  );
+};
+
 module.exports = {
   createUser,
   getUserByTelegramId,
@@ -103,5 +114,7 @@ module.exports = {
   saveUserApiKey,
   getUserApiKey,
   saveUserAccountDetails,
-  updateUserAccountId
+  updateUserAccountId,
+  updateUserUnits,
+  removeUserAccountDetails
 };

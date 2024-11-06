@@ -28,7 +28,11 @@ const userSchema = new mongoose.Schema({
     oandaAccountId: {
         type: String,
         default: null,
-    }
+    },
+    units: { 
+        type: String, 
+        default: '100' 
+    } 
 }, {
     timestamps: true,
 });
