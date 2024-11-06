@@ -6,6 +6,8 @@ const constant = require('./common/config/constant');
 const fs = require('fs');
 const https = require('https');
 const bot = require('./bot/bot');
+const startSubscriptionCheckJob = require('./jobs/subscriptionJob');
+const startCronJobs = require('./jobs/job')
 
 const indexFunction = () => {
   let server;
@@ -27,8 +29,8 @@ const indexFunction = () => {
           logger.info(`Server URL: ${config.url}/api/v1`);
         });
       }
-      const startCronJobs = require('./jobs/job')
       startCronJobs()
+      startSubscriptionCheckJob()
     })
     .catch(err => {
       logger.error('Error connecting to MongoDB: ', err);

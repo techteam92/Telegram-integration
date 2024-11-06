@@ -32,11 +32,17 @@ router.post('/copperx/paymentStatus', async (req, res) => {
             logger.error(`User with Telegram username ${telegramUsername} not found.`);
             return res.status(404).send('User not found');
         }
+        
+        const newExpiryDate = new Date();
+        newExpiryDate.setMonth(newExpiryDate.getMonth() + 1);
+        const updatedUser = await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate);
 
-        const updatedUser = await userService.updateUserSubscriptionStatus(user.telegramId, 'active');
         if (updatedUser) {
+            const newExpiryDate = new Date();
+            newExpiryDate.setMonth(newExpiryDate.getMonth() + 1); 
+            await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate);
             logger.info(`User ${user.telegramId} subscription status updated to active.`);
-            const chatId = '-1002212869845';
+            const chatId = '-1002451464440';
             bot.promoteChatMember(chatId, user.telegramId, {
                 can_send_messages: true,
                 can_send_media_messages: true,

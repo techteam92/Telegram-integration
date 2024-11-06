@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['active', 'inactive'],
     },
+    subscriptionExpiry: {
+        type: Date,
+        default: null, 
+    },
     oandaApiKey: {
         type: String,
         default: null,

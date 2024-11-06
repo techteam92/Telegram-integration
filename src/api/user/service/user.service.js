@@ -20,12 +20,37 @@ const getUserByTelegramId = async (telegramId) => {
   return user;
 };
 
-const updateUserSubscriptionStatus = async (telegramId, status) => {
-  const user = await getUserByTelegramId(telegramId);
-  user.subscriptionStatus = status;
-  await user.save();
-  return user;
-};
+async function updateUserSubscriptionStatus(telegramId, status, expiryDate = null) {
+  try {
+      const updateFields = { subscriptionStatus: status };
+      if (expiryDate) {
+          updateFields.subscriptionExpiry = expiryDate;
+      }
+      const updatedUser = await User.findOneAndUpdate(
+          { telegramId },
+          { $set: updateFields },
+          { new: true }
+      );
+      return updatedUser;
+  } catch (error) {
+      logger.error(`Error updating subscription status for ${telegramId}: ${error.message}`);
+      throw error;
+  }
+}
+
+async function getExpiredUsers(currentDate) {
+  try {
+      const expiredUsers = await User.find({
+          subscriptionStatus: 'active',
+          subscriptionExpiry: { $lt: currentDate },
+      });
+      return expiredUsers;
+  } catch (error) {
+      logger.error(`Error fetching expired users: ${error.message}`);
+      throw error;
+  }
+}
+
 
 const checkSubscriptionStatus = async (telegramId) => {
   const user = await User.findOne({ telegramId });
@@ -116,5 +141,6 @@ module.exports = {
   saveUserAccountDetails,
   updateUserAccountId,
   updateUserUnits,
-  removeUserAccountDetails
+  removeUserAccountDetails,
+  getExpiredUsers
 };
