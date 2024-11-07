@@ -53,10 +53,16 @@ bot.on('chat_member', async (msg) => {
     logger.error(`Error in chat_member handler: ${error.message}`);
   }
 });
-bot.on("message", async (msg) => {
-    console.log("message =====================")
+bot.on("left_chat_member", async (msg) => {
+    console.log("left_chat_member =====================")
 console.log(msg)
-console.log("message =====================")
+console.log("=====================left_chat_member")
+})
+
+bot.on("chat_join_request", async (msg) => {
+    console.log("chat_join_request =====================")
+console.log(msg)
+console.log("====================chat_join_request=")
 })
 
 
