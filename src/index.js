@@ -5,7 +5,7 @@ const logger = require('./common/utils/logger');
 const constant = require('./common/config/constant');
 const fs = require('fs');
 const https = require('https');
-const bot = require('./bot/bot');
+require('./bot/bot');
 const startSubscriptionCheckJob = require('./jobs/subscriptionJob');
 const signalJob = require('./jobs/signalJob')
 

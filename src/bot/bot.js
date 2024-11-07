@@ -52,6 +52,12 @@ bot.on('chat_member', async (msg) => {
         logger.error(`Error in chat_member handler: ${error.message}`);
     }
 });
+bot.on("message", async (msg) => {
+    console.log("message =====================")
+console.log(msg)
+console.log("message =====================")
+})
+
 
 const restrictUser = (chatId, userId) => {
     bot.restrictChatMember(chatId, userId, {
@@ -120,7 +126,7 @@ bot.on('callback_query', async (callbackQuery) => {
         try {
             const userApiKeyInfo = await userService.getUserApiKey(callbackQuery.from.id.toString());
             if (!userApiKeyInfo) {
-                await bot.sendMessage(userChatId, "Please set up your OANDA API key first using /set_oanda_key command.");
+                await bot.sendMessage(userChatId, "Please set up your OANDA API key first using /set_oanda_key.");
                 return;
             }
             const { oandaApiKey, oandaAccountType, oandaAccountId, units = '100' } = userApiKeyInfo;
