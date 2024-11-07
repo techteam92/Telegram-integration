@@ -9,7 +9,6 @@ function signalJob() {
   cron.schedule('*/1 * * * *', async () => {
     console.log('Running cron job...');
     const signal = await fetchSignalData();
-    console.log('Signal:', signal);
     if (signal) {
       const message = `Signal for ${signal.symbol}:
         Buy: ${signal.buy}
@@ -22,7 +21,6 @@ function signalJob() {
         Strategy: ${signal.strategyName}`;
 
       const tradeType = signal.buy ? 'buy' : 'sell';
-      console.log('Trade Type:', tradeType);
       const options = {
         reply_markup: {
           inline_keyboard: [

@@ -5,7 +5,6 @@ const logger = require('../../../common/utils/logger');
 const bot = require('../../../bot/bot');
 
 router.post('/copperx', async (req, res) => {
-    console.log(req.body); 
     console.log("This webhook was called by Copper X");
     res.sendStatus(200); 
 });
@@ -13,8 +12,6 @@ router.post('/copperx', async (req, res) => {
 router.post('/copperx/paymentStatus', async (req, res) => {
     try {
         logger.info("Processing paymentStatus webhook from Copper X");
-        console.log("webhook body: ", req.body);
-        console.log("object: ", req.body.data.object)
         console.log("custom fields", req.body.data.object.customFields.fields[0].text.value)
 
         const paymentStatus = req.body.data.object.paymentStatus;
@@ -23,8 +20,6 @@ router.post('/copperx/paymentStatus', async (req, res) => {
             logger.error('Invalid webhook data received.');
             return res.status(400).send('Invalid data');
         }
-
-        console.log(`Extracted Telegram Username: ${telegramUsername}`);
 
         const user = await userService.getUserByUsername(telegramUsername);
 

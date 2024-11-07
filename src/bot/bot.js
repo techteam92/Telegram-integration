@@ -78,14 +78,6 @@ const allowUser = (chatId, userId) => {
     });
 };
 
-const safeSendGroupMessage = async (chatId, text) => {
-  try {
-    await bot.sendMessage(chatId, text);
-  } catch (error) {
-    logger.error(`Error sending message to group ${chatId}: ${error.message}`);
-  }
-};
-
 bot.onText(/\/start/, (msg) => startCommand(bot, msg));
 bot.onText(/\/set_oanda_key/, (msg) => setOandaKeyCommand(bot, msg));
 bot.onText(/\/update_account/, (msg) => updateOandaAccountCommand(bot, msg));
