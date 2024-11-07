@@ -59,10 +59,10 @@ console.log(msg)
 console.log("=====================left_chat_member")
 })
 
-bot.on("chat_join_request", async (msg) => {
-    console.log("chat_join_request =====================")
+bot.on("new_chat_members", async (msg) => {
+    console.log("new_chat_members =====================")
 console.log(msg)
-console.log("====================chat_join_request=")
+console.log("====================new_chat_members=")
 })
 
 
