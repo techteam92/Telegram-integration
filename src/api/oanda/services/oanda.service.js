@@ -7,7 +7,6 @@ const OANDA_LIVE_URL = 'https://api-fxtrade.oanda.com/v3';
 
 const executeOandaTrade = async (apiKey, accountType, oandaAccountId, tradeData) => {
   const apiUrl = accountType === 'live' ? OANDA_LIVE_URL : OANDA_TEST_URL;
-  console.log('oanda account:', oandaAccountId);
   try {
     const response = await axios.post(`${apiUrl}/accounts/${oandaAccountId}/orders`, {
       order: tradeData
@@ -17,7 +16,6 @@ const executeOandaTrade = async (apiKey, accountType, oandaAccountId, tradeData)
         'Content-Type': 'application/json',
       },
     });
-    console.log('Trade executed successfully:', response.data);
     return response.data;
   } catch (error) {
     logger.error(`Error executing trade: ${error.response?.data?.errorMessage}`);

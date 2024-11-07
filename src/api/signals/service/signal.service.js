@@ -5,7 +5,6 @@ const fetchSignalData = async () => {
     const response = await axios.get('http://145.223.120.95:8000/get-signal-data/GBPUSD/minute/5');
     const { status, signal } = response.data;    
     if (status === 'Success') {
-      console.log('Signal data received:', signal);
       const signalData = signal[0]; 
       if (signalData.buy || signalData.sell) {
         const timestampUTC = new Date(signalData.timestamp + ' UTC').getTime()
