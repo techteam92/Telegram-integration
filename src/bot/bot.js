@@ -22,48 +22,32 @@ bot.setMyCommands([
   { command: '/update_account', description: 'Update oanda account' },
 ]);
 
-bot.on('chat_member', async (msg) => {
-  console.log('Inside Chat member');
+bot.on('new_chat_members', async (msg) => {
   const chatId = msg.chat.id;
-  const member = msg.new_chat_member;
-  if (!member) return;
-  const userId = member.user.id.toString();
-  const username = member.user.username || 'Anonymous';
-  if (['left', 'kicked'].includes(member.status) || (member.status === 'restricted' && !member.is_member)) {
-    logger.info(`${username} left or was kicked from the group.`);
-    return;
-  }
-
-  try {
-    let user = await userService.getUserByTelegramId(userId);
-    if (!user) {
-      user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive' });
-      logger.info(`New user added: ${username} with default inactive status.`);
-      restrictUser(chatId, userId);
-      await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
-      return;
-    } else if (user.subscriptionStatus !== 'active') {
-      restrictUser(chatId, userId);
-      await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
-      return;
-    } else {
-      allowUser(chatId, userId);
+  const newMembers = msg.new_chat_members; 
+  if (!newMembers || newMembers.length === 0) return;
+  for (const member of newMembers) {
+    const userId = member.id.toString();
+    const username = member.username || 'Anonymous';
+    try {
+      let user = await userService.getUserByTelegramId(userId);
+      if (!user) {
+        user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive' });
+        logger.info(`New user added: ${username} with default inactive status.`);
+        restrictUser(chatId, userId);
+        await bot.sendMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
+      } else if (user.subscriptionStatus !== 'active') {
+        restrictUser(chatId, userId);
+        await bot.sendMessage(chatId, `Welcome back ${username}, your subscription is inactive. Subscribe here: ${paymentLink}`);
+      } else {
+        allowUser(chatId, userId);
+        await bot.sendMessage(chatId, `Welcome back ${username}, you are subscribed and can fully participate in the group.`);
+      }
+    } catch (error) {
+      logger.error(`Error in new_chat_members handler for ${username}: ${error.message}`);
     }
-  } catch (error) {
-    logger.error(`Error in chat_member handler: ${error.message}`);
   }
 });
-bot.on("left_chat_member", async (msg) => {
-    console.log("left_chat_member =====================")
-console.log(msg)
-console.log("=====================left_chat_member")
-})
-
-bot.on("new_chat_members", async (msg) => {
-    console.log("new_chat_members =====================")
-console.log(msg)
-console.log("====================new_chat_members=")
-})
 
 
 const restrictUser = (chatId, userId) => {
