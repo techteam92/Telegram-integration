@@ -40,9 +40,11 @@ bot.on('chat_member', async (msg) => {
             logger.info(`New user added: ${username} with default inactive status.`);
             restrictUser(chatId, userId);
             await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
+            return
         } else if (user.subscriptionStatus !== 'active') {
             restrictUser(chatId, userId);
             await safeSendGroupMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
+            return
         } else {
             allowUser(chatId, userId);
         }
@@ -97,17 +99,19 @@ bot.on('callback_query', async (callbackQuery) => {
     console.log('Callback data:', data);
     if (data.startsWith('execute_trade')) {
         const [_, symbol, tradeType, signalId] = data.split('-');
-
+        const user = await userService.getUserByTelegramId(callbackQuery.from.id.toString());
+        if (!user || user.subscriptionStatus !== 'active') {
+            await bot.sendMessage(userChatId, `You need to subscribe to execute trades. Please subscribe here: ${paymentLink}`);
+            return;
+        }
         const signal = await Signal.findById(signalId);
         if (!signal) {
         await bot.sendMessage(userChatId, "Signal not found or may have expired.");
         return;
         }
-
-        console.log("Extracted Symbol:", symbol); 
-        console.log("Trade Type:", tradeType);
+   
         const signalAgeMinutes = (Date.now() - signal.createdAt.getTime()) / 60000;
-        console.log("signal age: ", signalAgeMinutes)
+
         if (signalAgeMinutes > 2) {
             await bot.sendMessage(userChatId, `The signal for ${symbol} is an old signal is not be reliable. Please wait for a new signal.`);
             return;
@@ -116,7 +120,7 @@ bot.on('callback_query', async (callbackQuery) => {
         try {
             const userApiKeyInfo = await userService.getUserApiKey(callbackQuery.from.id.toString());
             if (!userApiKeyInfo) {
-                await bot.sendMessage(userChatId, "Please set up your OANDA API key first using /set_oanda_key.");
+                await bot.sendMessage(userChatId, "Please set up your OANDA API key first using /set_oanda_key command.");
                 return;
             }
             const { oandaApiKey, oandaAccountType, oandaAccountId, units = '100' } = userApiKeyInfo;

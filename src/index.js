@@ -7,7 +7,7 @@ const fs = require('fs');
 const https = require('https');
 const bot = require('./bot/bot');
 const startSubscriptionCheckJob = require('./jobs/subscriptionJob');
-const startCronJobs = require('./jobs/job')
+const signalJob = require('./jobs/signalJob')
 
 const indexFunction = () => {
   let server;
@@ -29,7 +29,7 @@ const indexFunction = () => {
           logger.info(`Server URL: ${config.url}/api/v1`);
         });
       }
-      startCronJobs()
+      signalJob()
       startSubscriptionCheckJob()
     })
     .catch(err => {

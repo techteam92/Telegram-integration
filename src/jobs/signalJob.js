@@ -1,11 +1,12 @@
 const cron = require('node-cron');
 const fetchSignalData = require('../api/signals/service/signal.service');
 const bot = require('../bot/bot');
+const config = require('../common/config/config');
 
-const chatId = '-1002212869845';
+const chatId = config.groupChatId;
 
-function startCronJobs() {
-  cron.schedule('*/5 * * * *', async () => {
+function signalJob() {
+  cron.schedule('*/1 * * * *', async () => {
     console.log('Running cron job...');
     const signal = await fetchSignalData();
     console.log('Signal:', signal);
@@ -31,10 +32,9 @@ function startCronJobs() {
           ]
         }
       };
-      console.log('Options:', options.reply_markup.inline_keyboard[0]); 
       await bot.sendMessage(chatId, message, options);
    }
   });
 }
 
-module.exports = startCronJobs;
+module.exports = signalJob;
