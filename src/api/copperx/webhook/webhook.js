@@ -3,6 +3,7 @@ const router = express.Router();
 const userService = require('../../user/service/user.service');
 const logger = require('../../../common/utils/logger');
 const bot = require('../../../bot/bot');
+const config = require('../../../common/config/config');
 
 router.post('/copperx', async (req, res) => {
     console.log("This webhook was called by Copper X");
@@ -37,7 +38,7 @@ router.post('/copperx/paymentStatus', async (req, res) => {
             newExpiryDate.setMonth(newExpiryDate.getMonth() + 1); 
             await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate);
             logger.info(`User ${user.telegramId} subscription status updated to active.`);
-            const chatId = '-1002451464440';
+            const chatId = config.tgGroupId;
             bot.promoteChatMember(chatId, user.telegramId, {
                 can_send_messages: true,
                 can_send_media_messages: true,
