@@ -39,6 +39,7 @@ router.post('/copperx/paymentStatus', async (req, res) => {
             await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate);
             logger.info(`User ${user.telegramId} subscription status updated to active.`);
             const chatId = config.groupChatId;
+            console.log("chat id: ", chatId);
             bot.promoteChatMember(chatId, user.telegramId, {
                 can_send_messages: true,
                 can_send_media_messages: true,
