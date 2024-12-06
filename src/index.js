@@ -5,7 +5,9 @@ const logger = require('./common/utils/logger');
 const constant = require('./common/config/constant');
 const fs = require('fs');
 const https = require('https');
-const bot = require('./bot/bot');
+require('./bot/bot');
+const startSubscriptionCheckJob = require('./jobs/subscriptionJob');
+const signalJob = require('./jobs/signalJob')
 
 const indexFunction = () => {
   let server;
@@ -27,8 +29,8 @@ const indexFunction = () => {
           logger.info(`Server URL: ${config.url}/api/v1`);
         });
       }
-      const startCronJobs = require('./jobs/job')
-      startCronJobs()
+      signalJob()
+      startSubscriptionCheckJob()
     })
     .catch(err => {
       logger.error('Error connecting to MongoDB: ', err);
@@ -45,19 +47,19 @@ const indexFunction = () => {
     }
   };
 
-  const unexpectedErrorHandler = (error) => {
-    logger.error(error);
+  process.on('uncaughtException', (error) => {
+    logger.error(`Uncaught Exception: ${error.message}`, { stack: error.stack });
     exitHandler();
-  };
+  });
 
-  process.on('uncaughtException', unexpectedErrorHandler);
-  process.on('unhandledRejection', unexpectedErrorHandler);
+  process.on('unhandledRejection', (error) => {
+    logger.error(`Unhandled Rejection: ${error.message}`, { stack: error.stack });
+    exitHandler();
+  });
 
   process.on('SIGTERM', () => {
     logger.info('SIGTERM received');
-    if (server) {
-      server.close();
-    }
+    if (server) server.close();
   });
 };
 

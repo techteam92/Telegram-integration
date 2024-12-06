@@ -3,9 +3,9 @@ const router = express.Router();
 const userService = require('../../user/service/user.service');
 const logger = require('../../../common/utils/logger');
 const bot = require('../../../bot/bot');
+const config = require('../../../common/config/config');
 
 router.post('/copperx', async (req, res) => {
-    console.log(req.body); 
     console.log("This webhook was called by Copper X");
     res.sendStatus(200); 
 });
@@ -13,8 +13,6 @@ router.post('/copperx', async (req, res) => {
 router.post('/copperx/paymentStatus', async (req, res) => {
     try {
         logger.info("Processing paymentStatus webhook from Copper X");
-        console.log("webhook body: ", req.body);
-        console.log("object: ", req.body.data.object)
         console.log("custom fields", req.body.data.object.customFields.fields[0].text.value)
 
         const paymentStatus = req.body.data.object.paymentStatus;
@@ -24,19 +22,24 @@ router.post('/copperx/paymentStatus', async (req, res) => {
             return res.status(400).send('Invalid data');
         }
 
-        console.log(`Extracted Telegram Username: ${telegramUsername}`);
-
         const user = await userService.getUserByUsername(telegramUsername);
 
         if (!user) {
             logger.error(`User with Telegram username ${telegramUsername} not found.`);
             return res.status(404).send('User not found');
         }
+        
+        const newExpiryDate = new Date();
+        newExpiryDate.setMonth(newExpiryDate.getMonth() + 1);
+        const updatedUser = await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate);
 
-        const updatedUser = await userService.updateUserSubscriptionStatus(user.telegramId, 'active');
         if (updatedUser) {
+            const newExpiryDate = new Date();
+            newExpiryDate.setMonth(newExpiryDate.getMonth() + 1); 
+            await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate);
             logger.info(`User ${user.telegramId} subscription status updated to active.`);
-            const chatId = '-1002212869845';
+            const chatId = config.groupChatId;
+            console.log("chat id: ", chatId);
             bot.promoteChatMember(chatId, user.telegramId, {
                 can_send_messages: true,
                 can_send_media_messages: true,

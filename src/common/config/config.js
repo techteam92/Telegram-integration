@@ -22,6 +22,12 @@ const config = {
   get botToken() {
     return process.env.BOT_TOKEN
   },
+  get tgGroupLink() {
+    return process.env.TG_GROUP_LINK
+  },
+  get groupChatId() {
+    return process.env.GROUP_CHAT_ID
+  },
   nodeMailer: {
   get email() {
     return process.env.EMAIL;

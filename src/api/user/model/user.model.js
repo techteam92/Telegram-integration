@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         enum: ['active', 'inactive'],
     },
+    subscriptionExpiry: {
+        type: Date,
+        default: null, 
+    },
     oandaApiKey: {
         type: String,
         default: null,
@@ -24,7 +28,15 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['test', 'live'],
         default: null,
-    }
+    },
+    oandaAccountId: {
+        type: String,
+        default: null,
+    },
+    units: { 
+        type: String, 
+        default: '100' 
+    } 
 }, {
     timestamps: true,
 });
