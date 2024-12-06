@@ -1,155 +1,244 @@
 const TelegramBot = require('node-telegram-bot-api');
-const logger = require('../common/utils/logger');
-const startCommand = require('./commands/startCommand');
-const setOandaKeyCommand = require('./commands/setOandaKeyCommand');
 const config = require('../common/config/config');
-const tradingSignalsCommand = require('./commands/tradingSignalsCommand');
-const oandaService = require('../api/oanda/services/oanda.service');
+const callbackHandler = require('./callbacks/callbackHandler');
+const startSignalHandler = require('./handlers/startSignalHandler');
+const stopSignalHandler = require('./handlers/stopSignalHandler');
+const trendSettingHandler = require('./handlers/trendSettingHandler');
+const setUnitsHandler = require('./handlers/setUnitsHandler');
 const userService = require('../api/user/service/user.service');
-const paymentLink = 'https://buy.copperx.io/payment/payment-link/462bb3e8-fb93-4d3c-a3f2-288f20d47c14';
-const updateOandaAccountCommand = require('./commands/updateOandaAccountCommand');
-const Signal = require('../api/signals/models/signal.model');
-const setUnitsCommand = require('./commands/setUnitsCommand');
-const subscribeCommand = require('./commands/subscribeCommand');
+
 const bot = new TelegramBot(config.botToken, { polling: true });
 
-bot.setMyCommands([
-  { command: '/start', description: 'Start the bot' },
-  { command: '/set_oanda_key', description: 'Set your OANDA API key' },
-  { command: '/trading_signals', description: 'Get trading signals' },
-  { command: '/set_units', description: 'Set units for trade execution, by default unit is set to 100' },
-  { command: '/subscribe', description: 'Subscribe to the bot' },
-  { command: '/update_account', description: 'Update oanda account' },
-]);
+const mainMenuKeyboard = {
+  reply_markup: {
+    keyboard: [
+      [{ text: 'Start Signal' }, { text: 'Stop Signal' }],
+      [{ text: 'Trend Settings' }, { text: 'Set Units' }],
+      [{ text: 'Subscribe' }, { text: 'Billing Info' }],
+      [{ text: 'Help' }, { text: 'Unsubscribe' }],
+    ],
+    resize_keyboard: true,
+  },
+};
 
-bot.on('new_chat_members', async (msg) => {
+bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
-  const newMembers = msg.new_chat_members; 
-  if (!newMembers || newMembers.length === 0) return;
-  for (const member of newMembers) {
-    const userId = member.id.toString();
-    const username = member.username || 'Anonymous';
-    try {
-      let user = await userService.getUserByTelegramId(userId);
-      if (!user) {
-        user = await userService.createUser({ telegramId: userId, username, subscriptionStatus: 'inactive' });
-        logger.info(`New user added: ${username} with default inactive status.`);
-        restrictUser(chatId, userId);
-        await bot.sendMessage(chatId, `Welcome ${username}, you need to subscribe to participate in this group. Subscribe here: ${paymentLink}`);
-      } else if (user.subscriptionStatus !== 'active') {
-        restrictUser(chatId, userId);
-        await bot.sendMessage(chatId, `Welcome back ${username}, your subscription is inactive. Subscribe here: ${paymentLink}`);
-      } else {
-        allowUser(chatId, userId);
-        await bot.sendMessage(chatId, `Welcome back ${username}, you are subscribed and can fully participate in the group.`);
-      }
-    } catch (error) {
-      logger.error(`Error in new_chat_members handler for ${username}: ${error.message}`);
-    }
+  const username = msg.from.username || 'Anonymous';
+
+  const user = await userService.getUserByTelegramId(chatId.toString());
+  if (!user) {
+    await userService.createUser({
+      telegramId: chatId.toString(),
+      username,
+      subscriptionStatus: 'inactive',
+    });
+  }
+
+  await bot.sendMessage(chatId, 'Welcome to Solo Trend Bot! Select an option:', mainMenuKeyboard);
+});
+
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+
+  switch (msg.text) {
+    case 'Start Signal':
+      return startSignalHandler(bot, chatId);
+
+    case 'Stop Signal':
+      return stopSignalHandler(bot, chatId);
+
+    case 'Trend Settings':
+      return trendSettingHandler(bot, chatId);
+
+    case 'Set Units':
+      return setUnitsHandler(bot, chatId);
+
+    case 'Subscribe':
+      return bot.sendMessage(chatId, 'Subscription flow coming soon!');
+
+    case 'Billing Info':
+      return bot.sendMessage(chatId, 'Billing info flow coming soon!');
+
+    case 'Help':
+      return bot.sendMessage(chatId, 'Visit our help center: https://example.com/help');
+
+    case 'Unsubscribe':
+      return bot.sendMessage(chatId, 'Sorry to see you go! Unsubscription flow coming soon.');
+
+    default:
+      return bot.sendMessage(chatId, 'Invalid option. Please choose from the menu:', mainMenuKeyboard);
   }
 });
 
-
-const restrictUser = (chatId, userId) => {
-  bot
-    .restrictChatMember(chatId, userId, {
-      permissions: {
-        can_send_messages: false,
-        can_send_media_messages: false,
-        can_send_other_messages: false,
-        can_add_web_page_previews: false,
-      },
-    })
-    .catch((error) => {
-      logger.error(`Error restricting user ${userId}: ${error.message}`);
-    });
-};
-
-const allowUser = (chatId, userId) => {
-  bot
-    .promoteChatMember(chatId, userId, {
-      can_send_messages: true,
-      can_send_media_messages: true,
-      can_send_other_messages: true,
-      can_add_web_page_previews: true,
-    })
-    .catch((error) => {
-      logger.error(`Error allowing user ${userId}: ${error.message}`);
-    });
-};
-
-bot.onText(/\/start/, (msg) => startCommand(bot, msg));
-bot.onText(/\/set_oanda_key/, (msg) => setOandaKeyCommand(bot, msg));
-bot.onText(/\/update_account/, (msg) => updateOandaAccountCommand(bot, msg));
-bot.onText(/\/trading_signals/, (msg) => tradingSignalsCommand(bot, msg));
-bot.onText(/\/set_units/, (msg) => setUnitsCommand(bot, msg));
-bot.onText(/\/subscribe/, (msg) => subscribeCommand(bot, msg));
-
-bot.on('callback_query', async (callbackQuery) => {
-  const userChatId = callbackQuery.from.id;
-  const data = callbackQuery.data;
-  console.log('Callback data:', data);
-  if (data.startsWith('execute_trade')) {
-    const [_, symbol, tradeType, signalId] = data.split('-');
-    const user = await userService.getUserByTelegramId(callbackQuery.from.id.toString());
-    if (!user || user.subscriptionStatus !== 'active') {
-      await bot.sendMessage(userChatId, `You need to subscribe to execute trades. Please subscribe here: ${paymentLink}`);
-      return;
-    }
-    const signal = await Signal.findById(signalId);
-    if (!signal) {
-      await bot.sendMessage(userChatId, 'Signal not found or may have expired.');
-      return;
-    }
-
-    const signalAgeMinutes = (Date.now() - signal.createdAt.getTime()) / 60000;
-
-        if (signalAgeMinutes > 2) {
-            await bot.sendMessage(userChatId, `The signal for ${symbol} is an old signal is not be reliable. Please wait for a new signal.`);
-            return;
-        }
-  
-        try {
-            const userApiKeyInfo = await userService.getUserApiKey(callbackQuery.from.id.toString());
-            if (!userApiKeyInfo) {
-                await bot.sendMessage(userChatId, "Please set up your OANDA API key first using /set_oanda_key.");
-                return;
-            }
-            const { oandaApiKey, oandaAccountType, oandaAccountId, units = '100' } = userApiKeyInfo;
-  
-            if (!oandaAccountId) {
-                await bot.sendMessage(userChatId, "Your OANDA account ID is missing. Please update it by setting up your account again.");
-                return;
-            }
-  
-            await bot.sendMessage(userChatId, `Executing ${tradeType.toUpperCase()} trade for ${symbol}...`);
-            console.log("symbol", symbol);
-            const tradeUnits  = tradeType === 'sell' ? `-${units}` : units;
-            const tradeData = {
-                instrument: symbol,
-                units: tradeUnits,
-                type: 'MARKET',
-                accountId: oandaAccountId  
-            };
-  
-            const tradeResult = await oandaService.executeOandaTrade(oandaApiKey, oandaAccountType, oandaAccountId, tradeData);
-            await bot.sendMessage(userChatId, `${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)} trade for ${symbol} executed successfully!`);
-        } catch (error) {
-            const errorMessage = error.response && error.response.status === 400
-                ? "Invalid request. Please check your API key and inputs."
-                : "An unexpected error occurred. Please try again later.";
-  
-            await bot.sendMessage(userChatId, `Failed to execute ${tradeType} trade for ${symbol}. Error: ${errorMessage}`);
-            logger.error(`Error executing trade for ${symbol}: ${error.message}`);
-            console.log(error.response?.data?.errorMessage);
-        }
-    }
-  });
-  
-  
+bot.on('callback_query', (callbackQuery) => {
+  callbackHandler(bot, callbackQuery);
+});
 
 bot.on('polling_error', (error) => {
-  logger.error(`Polling error: ${error.message}`);
+  console.error(`Polling error: ${error.message}`);
 });
 
 module.exports = bot;
+
+
+
+
+
+
+
+
+
+
+
+// const TelegramBot = require('node-telegram-bot-api');
+// const logger = require('../common/utils/logger');
+// const startCommand = require('./handlers/startCommand');
+// const setOandaKeyCommand = require('./handlers/setOandaKeyCommand');
+// const config = require('../common/config/config');
+// const tradingSignalsCommand = require('./handlers/tradingSignalsCommand');
+// const oandaService = require('../api/oanda/services/oanda.service');
+// const userService = require('../api/user/service/user.service');
+// const paymentLink = 'https://buy.copperx.io/payment/payment-link/462bb3e8-fb93-4d3c-a3f2-288f20d47c14';
+// const updateOandaAccountCommand = require('./handlers/updateOandaAccountCommand');
+// const Signal = require('../api/signals/models/signal.model');
+// const setUnitsCommand = require('./handlers/setUnitsHandler');
+// const subscribeCommand = require('./handlers/subscribeHandler');
+// const bot = new TelegramBot(config.botToken, { polling: true });
+
+// bot.setMyCommands([
+//   { command: '/subscribe', description: 'Subscribe to Solo Trend' },
+//   { command: '/start_signal', description: 'Start receiving signals' },
+//   { command: '/stop_signal', description: 'Stop receiving signals' },
+//   { command: '/connect_account', description: 'Connect trading account' },
+//   { command: '/trend_settings', description: 'Configure trend settings' },
+//   { command: '/help', description: 'View help documentation' },
+//   { command: '/billing_info', description: 'View billing information' },
+//   { command: '/unsubscribe', description: 'Unsubscribe from Solo Trend' },
+// ]);
+
+// bot.onText(/\/start/, (msg) => startCommand(bot, msg));
+// bot.onText(/\/set_oanda_key/, (msg) => setOandaKeyCommand(bot, msg));
+// bot.onText(/\/update_account/, (msg) => updateOandaAccountCommand(bot, msg));
+// bot.onText(/\/trading_signals/, (msg) => tradingSignalsCommand(bot, msg));
+// bot.onText(/\/set_units/, (msg) => setUnitsCommand(bot, msg));
+// bot.onText(/\/subscribe/, (msg) => subscribeCommand(bot, msg));
+
+// bot.on('callback_query', async (callbackQuery) => {
+//     const chatId = callbackQuery.message.chat.id;
+//     const data = callbackQuery.data;
+//     const telegramId = callbackQuery.from.id.toString();
+
+//     try {
+//         // Subscription related callbacks
+//         if (data === 'subscribe_monthly' || data === 'subscribe_annual') {
+//             const plan = data === 'subscribe_monthly' ? 'monthly' : 'annually';
+//             const price = plan === 'monthly' ? '8$' : '79$';
+//             // Here you would integrate with your payment system
+//             await bot.sendMessage(chatId, `Please complete your ${plan} subscription payment of ${price}.`);
+//         }
+
+//         // Settings related callbacks
+//         if (data.startsWith('settings_')) {
+//             const setting = data.split('_')[1];
+//             switch (setting) {
+//                 case 'trade_type':
+//                     const tradeTypeKeyboard = {
+//                         reply_markup: {
+//                             inline_keyboard: [
+//                                 [{ text: 'Demo', callback_data: 'trade_type_demo' }],
+//                                 [{ text: 'Live', callback_data: 'trade_type_live' }]
+//                             ]
+//                         }
+//                     };
+//                     await bot.sendMessage(chatId, 'Select trade type:', tradeTypeKeyboard);
+//                     break;
+//                 case 'amount':
+//                     const amountKeyboard = {
+//                         reply_markup: {
+//                             inline_keyboard: [
+//                                 [{ text: '$1', callback_data: 'amount_1' }],
+//                                 [{ text: '$5', callback_data: 'amount_5' }],
+//                                 [{ text: '$10', callback_data: 'amount_10' }],
+//                                 [{ text: '$15', callback_data: 'amount_15' }]
+//                             ]
+//                         }
+//                     };
+//                     await bot.sendMessage(chatId, 'Select trade amount:', amountKeyboard);
+//                     break;
+//                 case 'auto_trade':
+//                     const autoTradeKeyboard = {
+//                         reply_markup: {
+//                             inline_keyboard: [
+//                                 [{ text: 'On', callback_data: 'auto_trade_on' }],
+//                                 [{ text: 'Off', callback_data: 'auto_trade_off' }]
+//                             ]
+//                         }
+//                     };
+//                     await bot.sendMessage(chatId, 'Auto-trade setting:', autoTradeKeyboard);
+//                     break;
+//                 case 'disconnect':
+//                     const user = await userService.getUserByTelegramId(telegramId);
+//                     if (user && user.connectedAccounts) {
+//                         const disconnectButtons = user.connectedAccounts.map(account => ([{
+//                             text: `${account.name} ✅`,
+//                             callback_data: `disconnect_${account.id}`
+//                         }]));
+//                         const keyboard = {
+//                             reply_markup: {
+//                                 inline_keyboard: disconnectButtons
+//                             }
+//                         };
+//                         await bot.sendMessage(chatId, 'Select account to disconnect:', keyboard);
+//                     } else {
+//                         await bot.sendMessage(chatId, 'No connected accounts found.');
+//                     }
+//                     break;
+//             }
+//         }
+
+//         // Handle settings selections
+//         if (data.startsWith('trade_type_')) {
+//             const type = data.split('_')[2];
+//             await userService.updateUserSettings(telegramId, { tradeType: type });
+//             await bot.sendMessage(chatId, `Trade type set to: ${type}`);
+//         }
+
+//         if (data.startsWith('amount_')) {
+//             const amount = data.split('_')[1];
+//             await userService.updateUserSettings(telegramId, { tradeAmount: parseInt(amount) });
+//             await bot.sendMessage(chatId, `Trade amount set to: $${amount}`);
+//         }
+
+//         if (data.startsWith('auto_trade_')) {
+//             const status = data.split('_')[2];
+//             await userService.updateUserSettings(telegramId, { autoTrade: status === 'on' });
+//             await bot.sendMessage(chatId, `Auto-trade turned ${status}`);
+//         }
+
+//         if (data.startsWith('disconnect_')) {
+//             const accountId = data.split('_')[1];
+//             await userService.disconnectAccount(telegramId, accountId);
+//             await bot.sendMessage(chatId, 'Account disconnected successfully');
+//         }
+
+//         // Billing related callbacks
+//         if (data.startsWith('billing_')) {
+//             const action = data.split('_')[1];
+//             if (action === 'upgrade') {
+//                 await bot.sendMessage(chatId, 'To upgrade to annual plan, please complete the payment.');
+//             } else if (action === 'downgrade') {
+//                 await bot.sendMessage(chatId, 'To downgrade to monthly plan, please complete the payment.');
+//             }
+//         }
+
+//     } catch (error) {
+//         logger.error(`Error handling callback query: ${error.message}`);
+//         await bot.sendMessage(chatId, 'An error occurred. Please try again.');
+//     }
+// });
+
+// bot.on('polling_error', (error) => {
+//   logger.error(`Polling error: ${error.message}`);
+// });
+
+// module.exports = bot;

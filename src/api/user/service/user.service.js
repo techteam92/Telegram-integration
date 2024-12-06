@@ -130,6 +130,15 @@ const removeUserAccountDetails = async (telegramId) => {
   );
 };
 
+const updateUserTradeSettings = async (telegramId, settings) => {
+  return User.findOneAndUpdate(
+    { telegramId },
+    { ...settings },
+    { new: true }
+  );
+};
+
+
 module.exports = {
   createUser,
   getUserByTelegramId,
@@ -142,5 +151,6 @@ module.exports = {
   updateUserAccountId,
   updateUserUnits,
   removeUserAccountDetails,
-  getExpiredUsers
+  getExpiredUsers,
+  updateUserTradeSettings
 };

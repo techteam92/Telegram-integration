@@ -1,45 +1,36 @@
-const mongoose = require('mongoose');
-const config = require('../../../common/config/config');
-
 const userSchema = new mongoose.Schema({
     telegramId: {
-        type: String,
-        required: true,
-        unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
     username: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     subscriptionStatus: {
-        type: String,
-        required: true,
-        enum: ['active', 'inactive'],
+      type: String,
+      required: true,
+      enum: ['active', 'inactive'],
     },
     subscriptionExpiry: {
-        type: Date,
-        default: null, 
+      type: Date,
+      default: null,
     },
-    oandaApiKey: {
-        type: String,
-        default: null,
+    units: {
+      type: String,
+      default: '100',
     },
-    oandaAccountType: {
-        type: String,
-        enum: ['test', 'live'],
-        default: null,
+    tradeType: {
+      type: String,
+      enum: ['Demo', 'Live'],
+      default: 'Demo',
     },
-    oandaAccountId: {
-        type: String,
-        default: null,
+    autoTrade: {
+      type: Boolean,
+      default: false,
     },
-    units: { 
-        type: String, 
-        default: '100' 
-    } 
-}, {
+  }, {
     timestamps: true,
-});
-
-const User = mongoose.model(config.collections.users, userSchema);
-module.exports = User;
+  });
+  
