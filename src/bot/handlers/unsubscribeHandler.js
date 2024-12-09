@@ -16,7 +16,6 @@ module.exports = async (bot, msg) => {
             return;
         }
 
-        // Update user's subscription status
         await userService.updateUser(user._id, { 
             subscriptionStatus: 'inactive',
             signalStatus: 'inactive'
@@ -24,7 +23,7 @@ module.exports = async (bot, msg) => {
         
         await bot.sendMessage(
             chatId,
-            "Sorry to see you go. Enjoy trading!\n\nThere will be no refund. No renewal will be done."
+            "Sorry to see you go. Best of luck in your trading journey!"
         );
     } catch (error) {
         logger.error(`Error in /unsubscribe command: ${error.message}`);

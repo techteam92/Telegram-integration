@@ -12,14 +12,4 @@ module.exports = async (bot, chatId) => {
   };
 
   await bot.sendMessage(chatId, 'Select your trade units:', unitsKeyboard);
-
-  bot.on('callback_query', async (callbackQuery) => {
-    const data = callbackQuery.data;
-
-    if (data.startsWith('unit_')) {
-      const units = data.split('_')[1];
-      await userService.updateUserUnits(chatId.toString(), units);
-      await bot.sendMessage(chatId, `Trade units updated to $${units}.`);
-    }
-  });
 };
