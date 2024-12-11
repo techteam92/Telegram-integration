@@ -29,7 +29,7 @@ const indexFunction = () => {
           logger.info(`Server URL: ${config.url}/api/v1`);
         });
       }
-      signalJob()
+      // signalJob()
       startSubscriptionCheckJob()
     })
     .catch(err => {

@@ -1,5 +1,6 @@
 const trendSettingsCallbacks = require('./trendSettingsCallbacks');
 const setUnitsCallbacks = require('./setUnitsCallbacks');
+const { handleConnectAccount } = require('./connectAccountCallbacks');
 
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -7,11 +8,14 @@ module.exports = async (bot, callbackQuery) => {
 
   try {
     switch (true) {
-      case data.startsWith('trend_'): 
+      case data.startsWith('trend_'):
         return trendSettingsCallbacks(bot, callbackQuery);
 
-      case data.startsWith('unit_'): 
+      case data.startsWith('unit_'):
         return setUnitsCallbacks(bot, callbackQuery);
+
+      case data.startsWith('connect_'):
+        return handleConnectAccount(bot, callbackQuery);
 
       default:
         await bot.sendMessage(chatId, 'Invalid action. Please try again.');
@@ -21,3 +25,4 @@ module.exports = async (bot, callbackQuery) => {
     await bot.sendMessage(chatId, 'An error occurred. Please try again later.');
   }
 };
+

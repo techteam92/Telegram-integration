@@ -1,14 +1,7 @@
 const userService = require('../../api/user/service/user.service');
 
-module.exports = async (bot, chatId) => {
+module.exports = async (bot, chatId, user) => {
   try {
-    const user = await userService.getUserByTelegramId(chatId.toString());
-    if (!user || user.subscriptionStatus !== 'active') {
-      return bot.sendMessage(
-        chatId,
-        'Please subscribe to a plan to start receiving signals. Use the "Subscribe" button in the main menu.'
-      );
-    }
     if (user.isReceivingSignals) {
       return bot.sendMessage(chatId, 'You are already receiving signals. Use the "Trend Settings" option to configure further.');
     }

@@ -1,9 +1,7 @@
 const userService = require('../../api/user/service/user.service');
 const paymentLink = 'https://buy.copperx.io/payment/payment-link/462bb3e8-fb93-4d3c-a3f2-288f20d47c14';
 
-module.exports = async (bot, chatId) => {
-  const user = await userService.getUserByTelegramId(chatId.toString());
-
+module.exports = async (bot, chatId, user) => {
   if (user && user.subscriptionStatus === 'active') {
     await bot.sendMessage(
       chatId,

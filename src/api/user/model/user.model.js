@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema(
       enum: ['active', 'inactive'],
       default: 'inactive',
     },
+    subscriptionStartDate: {
+      type: Date,
+      default: null,
+    },
     subscriptionExpiry: {
       type: Date,
       default: null,
@@ -29,49 +33,52 @@ const userSchema = new mongoose.Schema(
     },
     units: {
       type: String,
-      default: '100', 
+      default: '100',
     },
     tradeType: {
       type: String,
       enum: ['Demo', 'Live'],
-      default: 'Demo', 
+      default: 'Demo',
     },
     autoTrade: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     connectedAccounts: {
       type: [
         {
           accountType: {
             type: String,
-            enum: ['Novus', 'Sway Charts'], 
+            enum: ['Novus', 'Sway Charts'],
           },
           accountId: {
-            type: String, 
+            type: String,
           },
         },
       ],
-      default: [], 
-    },
-    isReceivingSignals: {
-      type: Boolean,
-      default: false,
+      default: [],
     },
     trendSettings: {
       tradeAmount: {
         type: String,
-        enum: ['1$', '5$', '10$', '15$'], 
-        default: '1$', 
+        default: '1$',
       },
       autoTrade: {
         type: Boolean,
-        default: false, 
+        default: false,
       },
+    },
+    novusAccessToken: {
+      type: String,
+      default: null,
+    },
+    novusTokenExpiry: {
+      type: Date,
+      default: null,
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

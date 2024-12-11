@@ -13,154 +13,138 @@ const createUser = async (userBody) => {
 };
 
 const getUserByTelegramId = async (telegramId) => {
-  const user = await User.findOne({ telegramId });
-  if (!user) {
-    return false;
-  }
-  return user;
+  return await User.findOne({ telegramId }) || null;
 };
 
-const updateUserSubscriptionStatus = async (telegramId, status, expiryDate = null) => {
+const updateUserSubscriptionStatus = async (telegramId, status, expiryDate = null, plan = null) => {
+  const updateFields = { subscriptionStatus: status };
+  if (expiryDate) updateFields.subscriptionExpiry = expiryDate;
+  if (plan) updateFields.subscriptionPlan = plan;
+
   try {
-    const updateFields = { subscriptionStatus: status };
-    if (expiryDate) {
-      updateFields.subscriptionExpiry = expiryDate;
-    }
-    const updatedUser = await User.findOneAndUpdate(
+    return await User.findOneAndUpdate(
       { telegramId },
       { $set: updateFields },
       { new: true }
     );
-    return updatedUser;
   } catch (error) {
-    logger.error(`Error updating subscription status for ${telegramId}: ${error.message}`);
+    logger.error(`Error updating subscription for user ${telegramId}: ${error.message}`);
     throw error;
   }
 };
 
 const getExpiredUsers = async (currentDate) => {
-  try {
-    const expiredUsers = await User.find({
-      subscriptionStatus: 'active',
-      subscriptionExpiry: { $lt: currentDate },
-    });
-    return expiredUsers;
-  } catch (error) {
-    logger.error(`Error fetching expired users: ${error.message}`);
-    throw error;
-  }
+  return await User.find({
+    subscriptionStatus: 'active',
+    subscriptionExpiry: { $lt: currentDate },
+  });
 };
 
-const checkSubscriptionStatus = async (telegramId) => {
-  const user = await User.findOne({ telegramId });
-
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-
-  return user.subscriptionStatus;
-};
-
-const getUserByUsername = async (username) => {
-  const user = await User.findOne({ username: username });
-  if (!user) {
-    return null;
-  }
-  return user;
+const updateUserTradeType = async (telegramId, tradeType) => {
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { tradeType },
+    { new: true }
+  );
 };
 
 const updateUserUnits = async (telegramId, units) => {
-  return User.findOneAndUpdate({ telegramId }, { units }, { new: true });
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { units },
+    { new: true }
+  );
 };
 
-const updateUserReceivingSignals = async (telegramId, isReceivingSignals) => {
-  try {
-    const user = await User.findOneAndUpdate(
-      { telegramId },
-      { isReceivingSignals },
-      { new: true }
-    );
-    return user;
-  } catch (error) {
-    logger.error(`Error updating signal status for user ${telegramId}: ${error.message}`);
-    throw error;
+const updateUserAutoTrade = async (telegramId, autoTrade) => {
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { 'trendSettings.autoTrade': autoTrade },
+    { new: true }
+  );
+};
+
+const updateNovusToken = async (telegramId, accessToken, expiryDate) => {
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { novusAccessToken: accessToken, novusTokenExpiry: expiryDate },
+    { new: true }
+  );
+};
+
+const getNovusToken = async (telegramId) => {
+  const user = await User.findOne({ telegramId });
+  const currentTime = new Date();
+  if (user?.novusAccessToken && user.novusTokenExpiry > currentTime) {
+    return user.novusAccessToken;
   }
+  return null;
 };
 
 const updateUserConnectedAccounts = async (telegramId, accountType, accountId) => {
-  try {
-    const user = await User.findOne({ telegramId });
-    if (!user) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-    }
-    const updatedAccounts = [...user.connectedAccounts];
-    const existingAccountIndex = updatedAccounts.findIndex(
-      (account) => account.accountType === accountType
-    );
+  const user = await User.findOne({ telegramId });
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
 
-    if (existingAccountIndex !== -1) {
-      updatedAccounts[existingAccountIndex].accountId = accountId;
-    } else {
-      updatedAccounts.push({ accountType, accountId });
-    }
-    const updatedUser = await User.findOneAndUpdate(
-      { telegramId },
-      { connectedAccounts: updatedAccounts },
-      { new: true }
-    );
-    return updatedUser;
-  } catch (error) {
-    logger.error(`Error updating connected accounts for user ${telegramId}: ${error.message}`);
-    throw error;
+  const existingAccountIndex = user.connectedAccounts.findIndex(
+    (account) => account.accountType === accountType
+  );
+
+  if (existingAccountIndex !== -1) {
+    user.connectedAccounts[existingAccountIndex].accountId = accountId;
+  } else {
+    user.connectedAccounts.push({ accountType, accountId });
   }
+  return await user.save();
 };
 
 const disconnectUserAccount = async (telegramId, accountType) => {
+  const user = await User.findOne({ telegramId });
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+
+  user.connectedAccounts = user.connectedAccounts.filter(
+    (account) => account.accountType !== accountType
+  );
+  return await user.save();
+};
+
+const updateUserReceivingSignals = async (telegramId, isReceivingSignals) => {
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { isReceivingSignals },
+    { new: true }
+  );
+};
+
+const updateUserAccountDetails = async (telegramId, sessionToken) => {
   try {
-    const user = await User.findOne({ telegramId });
-    if (!user) {
+    const updatedUser = await User.findOneAndUpdate(
+      { telegramId },
+      { novusAccessToken: sessionToken, novusTokenExpiry: new Date(Date.now() + 1800000) }, 
+      { new: true }
+    );
+    if (!updatedUser) {
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
     }
-    const updatedAccounts = user.connectedAccounts.filter(
-      (account) => account.accountType !== accountType
-    );
-    const updatedUser = await User.findOneAndUpdate(
-      { telegramId },
-      { connectedAccounts: updatedAccounts },
-      { new: true }
-    );
-
     return updatedUser;
   } catch (error) {
-    logger.error(`Error disconnecting account for user ${telegramId}: ${error.message}`);
+    logger.error(`Error updating Novus account details for user ${telegramId}: ${error.message}`);
     throw error;
   }
 };
 
-const updateUserTrendSettings = async (telegramId, trendSettings) => {
-  try {
-    const updatedUser = await User.findOneAndUpdate(
-      { telegramId },
-      { trendSettings },
-      { new: true }
-    );
-    return updatedUser;
-  } catch (error) {
-    logger.error(`Error updating trend settings for user ${telegramId}: ${error.message}`);
-    throw error;
-  }
-};
 
 module.exports = {
   createUser,
   getUserByTelegramId,
   updateUserSubscriptionStatus,
   getExpiredUsers,
-  checkSubscriptionStatus,
-  getUserByUsername,
+  updateUserTradeType,
   updateUserUnits,
-  updateUserReceivingSignals,
+  updateUserAutoTrade,
+  updateNovusToken,
+  getNovusToken,
   updateUserConnectedAccounts,
   disconnectUserAccount,
-  updateUserTrendSettings,
+  updateUserReceivingSignals,
+  updateUserAccountDetails
 };
