@@ -16,6 +16,10 @@ const getUserByTelegramId = async (telegramId) => {
   return await User.findOne({ telegramId }) || null;
 };
 
+const getUserByTelegramUsername = async (telegramUsername) => {
+  return await User.findOne({ username: telegramUsername }) || null;
+};
+
 const updateUserSubscriptionStatus = async (telegramId, status, expiryDate = null, plan = null) => {
   const updateFields = { subscriptionStatus: status };
   if (expiryDate) updateFields.subscriptionExpiry = expiryDate;
@@ -136,6 +140,7 @@ const updateUserAccountDetails = async (telegramId, sessionToken) => {
 module.exports = {
   createUser,
   getUserByTelegramId,
+  getUserByTelegramUsername,
   updateUserSubscriptionStatus,
   getExpiredUsers,
   updateUserTradeType,

@@ -77,13 +77,13 @@ bot.on('message', async (msg) => {
       return subscribeHandler(bot, chatId, user);
 
     case 'Billing Info':
-      return billingInfoHandler(bot, chatId);
+      return billingInfoHandler(bot, msg);
 
     case 'Help':
       return bot.sendMessage(chatId, 'Visit our help center: https://example.com/help');
 
     case 'Unsubscribe':
-      return unsubscribeHandler(bot, chatId);
+      return unsubscribeHandler(bot, msg);
 
     default:
       return 

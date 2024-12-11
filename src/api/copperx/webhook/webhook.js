@@ -13,7 +13,9 @@ router.post('/copperx', async (req, res) => {
 router.post('/copperx/paymentStatus', async (req, res) => {
     try {
         logger.info("Processing paymentStatus webhook from Copperx");
-
+        console.log("============================")
+        console.log(req.body);
+        console.log("============================")
         const paymentStatus = req.body.data.object.paymentStatus;
         const telegramUsername = req.body.data.object.customFields.fields[0].text.value;
 
@@ -22,7 +24,7 @@ router.post('/copperx/paymentStatus', async (req, res) => {
             return res.status(400).send('Payment not completed');
         }
 
-        const user = await userService.getUserByUsername(telegramUsername);
+        const user = await userService.getUserByTelegramUsername(telegramUsername);
 
         if (!user) {
             logger.error(`User with Telegram username ${telegramUsername} not found.`);

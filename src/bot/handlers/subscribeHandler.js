@@ -1,6 +1,3 @@
-const userService = require('../../api/user/service/user.service');
-const paymentLink = 'https://buy.copperx.io/payment/payment-link/462bb3e8-fb93-4d3c-a3f2-288f20d47c14';
-
 module.exports = async (bot, chatId, user) => {
   if (user && user.subscriptionStatus === 'active') {
     await bot.sendMessage(
@@ -10,14 +7,11 @@ module.exports = async (bot, chatId, user) => {
   } else {
     const subscribeKeyboard = {
       reply_markup: {
-        keyboard: [
-          [{ text: 'Subscribe Monthly ($8/month)' }],
-          [{ text: 'Subscribe Annually ($79/year)' }],
-          [{ text: 'Back to Menu' }],
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: false,
-      },
+        inline_keyboard: [
+            [{ text: 'Subscribe Monthly ($8/month)', callback_data: 'subscribe_monthly' }],
+            [{ text: 'Subscribe Annually ($79/year)', callback_data: 'subscribe_annually' }]
+        ]
+      }
     };
 
     await bot.sendMessage(

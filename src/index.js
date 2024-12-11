@@ -53,6 +53,7 @@ const indexFunction = () => {
   });
 
   process.on('unhandledRejection', (error) => {
+    console.log("error: ", error);
     logger.error(`Unhandled Rejection: ${error.message}`, { stack: error.stack });
     exitHandler();
   });

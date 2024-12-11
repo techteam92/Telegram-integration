@@ -23,18 +23,8 @@ module.exports = async (bot, msg) => {
         };
 
         const currentPlan = planInfo[user.subscriptionPlan] || planInfo.monthly;
-        const message = `Hello ${username} (@${username}),\nHere are the billing info for the plan you are subscribed to:\n\nPlan: ${currentPlan.type}\nAmount: ${currentPlan.price}\nStart Date: ${new Date(user.subscriptionStartDate).toLocaleDateString()}`;
-
-        const keyboard = {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Upgrade', callback_data: 'billing_upgrade' }],
-                    [{ text: 'Downgrade', callback_data: 'billing_downgrade' }]
-                ]
-            }
-        };
-
-        await bot.sendMessage(chatId, message, keyboard);
+        const message = `Hello ${username} (@${username}),\nHere are the billing info for the plan you are subscribed to:\n\nPlan: ${currentPlan.type}\nAmount: ${currentPlan.price}\nSubscription vaild till: ${new Date(user.subscriptionExpiry).toLocaleDateString()}`;
+        await bot.sendMessage(chatId, message);
     } catch (error) {
         logger.error(`Error in /billing_info command: ${error.message}`);
         await bot.sendMessage(
