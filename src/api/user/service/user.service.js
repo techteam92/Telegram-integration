@@ -1,5 +1,6 @@
 const ApiError = require('../../../common/response/error');
 const logger = require('../../../common/utils/logger');
+const Platform = require('../model/platform.model');
 const User = require('../model/user.model');
 const httpStatus = require('http-status');
 
@@ -119,11 +120,19 @@ const updateUserReceivingSignals = async (telegramId, isReceivingSignals) => {
   );
 };
 
+const updateUserTrendSettings = async (telegramId, trendSettings) => {
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { $set: { trendSettings } },
+    { new: true }
+  );
+};
+
 const updateUserAccountDetails = async (telegramId, sessionToken) => {
   try {
     const updatedUser = await User.findOneAndUpdate(
       { telegramId },
-      { novusAccessToken: sessionToken, novusTokenExpiry: new Date(Date.now() + 1800000) }, 
+      { novusAccessToken: sessionToken, novusTokenExpiry: new Date(Date.now() + 1800000) },
       { new: true }
     );
     if (!updatedUser) {
@@ -136,6 +145,90 @@ const updateUserAccountDetails = async (telegramId, sessionToken) => {
   }
 };
 
+const updateUserTimeframes = async (telegramId, timeframes) => {
+  const allowedTimeframes = ['1m', '5m', '10m', '15m', '30m', '1hr'];
+  const validatedTimeframes = timeframes.filter((tf) => allowedTimeframes.includes(tf));
+
+  if (validatedTimeframes.length === 0) {
+    validatedTimeframes.push('1m'); 
+  }
+
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { $set: { 'trendSettings.timeframes': validatedTimeframes } },
+    { new: true }
+  );
+};
+
+const getSubscribedUsersWithTimeframe = async (timeframe) => {
+  return await User.find({
+    subscriptionStatus: 'active',
+    'trendSettings.timeframes': timeframe, 
+  });
+};
+
+const checkPlatformAccount = async (userId, platformName) => {
+  const platform = await Platform.findOne({ userId, platformName });
+  if (!platform) {
+    return null;
+  }
+  return platform
+};
+
+const getPlatformAccounts = async (userId, platformName) => {
+  const platform = await Platform.findOne({ userId, platformName });
+  return platform?.accounts || [];
+};
+
+const setActivePlatformAccount = async (userId, platformName, accountId) => {
+  await Platform.updateOne(
+    { userId, platformName, 'accounts.accountId': accountId },
+    { $set: { 'accounts.$.isActive': true, currentAccount: accountId } }
+  );
+  return Platform.findOne({ userId, platformName });
+};
+
+const addPlatformAccount = async (userId, platformName, account) => {
+  try {
+    const existingPlatform = await Platform.findOne({
+      userId,
+      platformName,
+      accounts: { $elemMatch: { accountId: account.accountId } },
+    });
+
+    if (existingPlatform) {
+      logger.info(`Account ${account.accountId} already exists for platform ${platformName}`);
+      return existingPlatform;
+    }
+    const platform = await Platform.findOneAndUpdate(
+      { userId, platformName },
+      { $push: { accounts: account } },
+      { new: true, upsert: true }
+    );
+    return platform;
+  } catch (error) {
+    logger.error(
+      `Error adding account ${account.accountId} to platform ${platformName} for user ${userId}: ${error.message}`
+    );
+    throw new Error('Failed to add platform account');
+  }
+};
+
+const createOrUpdatePlatform = async (userId, platformName, accessToken, tokenExpiry) => {
+  try {
+    const platform = await Platform.findOneAndUpdate(
+      { userId, platformName },
+      { accessToken, tokenExpiry }, 
+      { new: true, upsert: true }
+    );
+    return platform;
+  } catch (error) {
+    logger.error(
+      `Error creating or updating platform ${platformName} for user ${userId}: ${error.message}`
+    );
+    throw new Error('Failed to create or update platform');
+  }
+};
 
 module.exports = {
   createUser,
@@ -151,5 +244,13 @@ module.exports = {
   updateUserConnectedAccounts,
   disconnectUserAccount,
   updateUserReceivingSignals,
-  updateUserAccountDetails
+  updateUserTrendSettings,
+  updateUserAccountDetails,
+  updateUserTimeframes, 
+  getSubscribedUsersWithTimeframe, 
+  getPlatformAccounts,
+  setActivePlatformAccount,
+  addPlatformAccount,
+  createOrUpdatePlatform,
+  checkPlatformAccount
 };

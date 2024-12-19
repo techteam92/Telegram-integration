@@ -5,8 +5,7 @@ module.exports = async (bot, msg) => {
     const chatId = msg.chat.id;
 
     try {
-        const helpMessage = `For detailed information about using Solo Trend Bot, please visit our knowledge base:\n${config.knowledgeBaseUrl}`;
-        
+        const helpMessage = `For detailed information about using Solo Trend Bot, please visit our knowledge base:\nwww.solotrend.com/help`;
         await bot.sendMessage(
             chatId,
             helpMessage,

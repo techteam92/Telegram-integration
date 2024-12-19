@@ -44,20 +44,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    connectedAccounts: {
-      type: [
-        {
-          accountType: {
-            type: String,
-            enum: ['Novus', 'Sway Charts'],
-          },
-          accountId: {
-            type: String,
-          },
-        },
-      ],
-      default: [],
-    },
     trendSettings: {
       tradeAmount: {
         type: String,
@@ -67,14 +53,11 @@ const userSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
-    },
-    novusAccessToken: {
-      type: String,
-      default: null,
-    },
-    novusTokenExpiry: {
-      type: Date,
-      default: null,
+      timeframes: {
+        type: [String], 
+        enum: ['1m', '5m', '10m', '15m', '30m', '60m'],
+        default: ['1m'],
+      },
     },
   },
   {
@@ -82,5 +65,5 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model(config.collections.users, userSchema);
+const User = mongoose.model('users', userSchema);
 module.exports = User;

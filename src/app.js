@@ -19,6 +19,7 @@ app.use(morgan.errorHandler);
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.text({ type: "text/plain" }));
 app.use(mongoSanitize());
 app.use(compression());
 app.use(cors());

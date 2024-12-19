@@ -2,6 +2,8 @@ const trendSettingsCallbacks = require('./trendSettingsCallbacks');
 const setUnitsCallbacks = require('./setUnitsCallbacks');
 const { handleConnectAccount } = require('./connectAccountCallbacks');
 const { handleSubscriptionCallbacks } = require('./subscriptionCallbacks');
+const { toggleTimeframe } = require('./toggleTimeframeCallback');
+const { managePlatformAccounts, setActivePlatformAccount } = require('./platformCallbackHandler');
 
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -20,6 +22,21 @@ module.exports = async (bot, callbackQuery) => {
 
       case data.startsWith('subscribe_'):
         return handleSubscriptionCallbacks(bot, callbackQuery);
+
+      case data.startsWith('timeframe_toggle_'): {
+        const timeframe = data.split('_')[2];
+        return toggleTimeframe(bot, chatId, timeframe);
+      }
+
+      case data.startsWith('platform_manage_'): {
+        const platformName = data.split('_')[2];
+        return managePlatformAccounts(bot, chatId, platformName);
+      }
+
+      case data.startsWith('platform_set_active_'): {
+        const [platformName, accountId] = data.split('_').slice(2);
+        return setActivePlatformAccount(bot, chatId, platformName, accountId);
+      }
 
       default:
         await bot.sendMessage(chatId, 'Invalid action. Please try again.');

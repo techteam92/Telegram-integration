@@ -10,6 +10,8 @@ const connectAccountHandler = require('./handlers/connectAccountHandler');
 const subscribeHandler = require('./handlers/subscribeHandler');
 const unsubscribeHandler = require('./handlers/unsubscribeHandler');
 const billingInfoHandler = require('./handlers/billingInfoHandler');
+const setTimeframeHandler = require('./handlers/setTimeframeHandler');
+const platformAccountHandler = require('./handlers/platformAccountHandler');
 
 const bot = new TelegramBot(config.botToken, { polling: true });
 const mainMenuKeyboard = {
@@ -17,9 +19,10 @@ const mainMenuKeyboard = {
     keyboard: [
       [{ text: 'Start Signal' }, { text: 'Stop Signal' }],
       [{ text: 'Trend Settings' }, { text: 'Set Units' }],
-      [{ text: 'Connect Account' }, { text: 'Subscribe' }],
-      [{ text: 'Billing Info' }, { text: 'Help' }],
-      [{ text: 'Unsubscribe' }],
+      [{ text: 'Connect Account' }, { text: 'Set Timeframes' }],
+      [{ text: 'Subscribe' }, { text: 'Billing Info' }],
+      [{ text: 'Help' }, { text: 'Unsubscribe' }],
+      [{ text: 'Manage Accounts'}],
     ],
     resize_keyboard: true,
   },
@@ -28,7 +31,7 @@ const mainMenuKeyboard = {
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username || 'Anonymous';
-  const user = await userService.getUserByTelegramId(chatId.toString());  
+  const user = await userService.getUserByTelegramId(chatId.toString());
   if (!user) {
     await userService.createUser({
       telegramId: chatId.toString(),
@@ -73,6 +76,12 @@ bot.on('message', async (msg) => {
     case 'Connect Account':
       return connectAccountHandler.initiateConnectAccount(bot, chatId);
 
+    case 'Set Timeframes':
+      return setTimeframeHandler(bot, chatId, user);
+
+    case 'Manage Accounts': 
+      return platformAccountHandler(bot, chatId);
+
     case 'Subscribe':
       return subscribeHandler(bot, chatId, user);
 
@@ -86,7 +95,7 @@ bot.on('message', async (msg) => {
       return unsubscribeHandler(bot, msg);
 
     default:
-      return 
+      return;
   }
 });
 
