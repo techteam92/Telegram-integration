@@ -197,7 +197,6 @@ const addPlatformAccount = async (userId, platformName, account) => {
     });
 
     if (existingPlatform) {
-      logger.info(`Account ${account.accountId} already exists for platform ${platformName}`);
       return existingPlatform;
     }
     const platform = await Platform.findOneAndUpdate(

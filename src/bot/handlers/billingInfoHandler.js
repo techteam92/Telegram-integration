@@ -18,11 +18,10 @@ module.exports = async (bot, msg) => {
         }
 
         const planInfo = {
-            monthly: { price: '8$', type: 'Monthly' },
-            annually: { price: '79$', type: 'Annually' }
+            "Monthly": { price: '8$', type: 'Monthly' },
+            "Annually": { price: '79$', type: 'Annually' }
         };
-
-        const currentPlan = planInfo[user.subscriptionPlan] || planInfo.monthly;
+        const currentPlan = planInfo[user.subscriptionPlan] || planInfo["Monthly"];
         const message = `Hello ${username} (@${username}),\nHere are the billing info for the plan you are subscribed to:\n\n*Plan*: ${currentPlan.type}\n*Amount*: ${currentPlan.price}\n*Subscription vaild till*: ${new Date(user.subscriptionExpiry).toLocaleDateString()}`;
         await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });    } catch (error) {
         logger.error(`Error in /billing_info command: ${error.message}`);

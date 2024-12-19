@@ -35,43 +35,58 @@ const managePlatformAccounts = async (bot, chatId, platformName) => {
           });
         }
         const updatedPlatform = await userService.getPlatformAccounts(userId, platformName);
-        return showAccounts(bot, chatId, platformName, updatedPlatform);
+        return showAccounts(bot, chatId, platformName, updatedPlatform, userId);
       } catch (error) {
-        console.error(`Error fetching Novus accounts for chatId ${chatId}: ${error.message}`);
+        console.log(`Error fetching Novus accounts for chatId ${chatId}: ${error.message}`);
+        if (error.message.includes('Authorization required')) {
+          await bot.sendMessage(
+            chatId,
+            `Your ${platformName} account token has expired. Please reconnect your account using the "Connect Account" option in the main menu.`,
+            { parse_mode: 'Markdown' },
+          );
+          return;
+        }
         return bot.sendMessage(chatId, `Failed to fetch accounts from ${platformName}. Please try again later.`, { parse_mode: 'Markdown' });
       }
     }
   } catch (error) {
-    console.error(`Error managing accounts for ${platformName}: ${error.message}`);
+    console.log(`Error managing accounts for ${platformName}: ${error.message}`);
+    if (error.message.includes('Authorization required')) {
+      await bot.sendMessage(
+        chatId,
+        `Your ${platformName} account token has expired. Please reconnect your account using the "Connect Account" option in the main menu.`,
+        { parse_mode: 'Markdown' },
+      );
+      return;
+    }
     await bot.sendMessage(chatId, `An error occurred while retrieving accounts for ${platformName}. Please try again.`);
   }
 };
 
-const showAccounts = async (bot, chatId, platformName, accounts) => {
-  console.log(`Accounts for chatId ${chatId}:`, accounts);
+const showAccounts = async (bot, chatId, platformName, accounts, userId) => {
   if (!accounts || accounts.length === 0) {
     return bot.sendMessage(chatId, `No accounts found for ${platformName}.`);
   }
-
   const accountKeyboard = {
     reply_markup: {
-      inline_keyboard: accounts.map((account) => [
+      inline_keyboard: accounts.map((account) => {
+      return [
         {
           text: `${account.isActive ? '✅ ' : ''}${account.accountId}`,
-          callback_data: `platform_set_active_${platformName}_${account.accountId}`,
+          callback_data: `PSA/${platformName}/${userId}/${account.accountId}`,
         },
-      ]),
+      ]
+    }),
     },
   };
-
   await bot.sendMessage(chatId, `Select your active account for ${platformName}:`, accountKeyboard);
 };
 
-const setActivePlatformAccount = async (bot, chatId, platformName, accountId) => {
+const setActivePlatformAccount = async (bot, chatId, platformName, accountId, userId) => {
   try {
-    const platform = await userService.setActivePlatformAccount(chatId, platformName, accountId);
+    const platform = await userService.setActivePlatformAccount(userId, platformName, accountId);
     if (!platform) {
-      return bot.sendMessage(chatId, `Failed to set active account for ${platformName}. Please connect you account again`);
+      return bot.sendMessage(chatId, `Failed to set active account for ${platformName}. Please connect your account again.`);
     }
     await bot.sendMessage(chatId, `Successfully set active account: ${accountId} for ${platformName}. 🎉`);
   } catch (error) {
@@ -79,6 +94,7 @@ const setActivePlatformAccount = async (bot, chatId, platformName, accountId) =>
     await bot.sendMessage(chatId, `An error occurred while setting the active account for ${platformName}.`);
   }
 };
+
 
 module.exports = {
   managePlatformAccounts,

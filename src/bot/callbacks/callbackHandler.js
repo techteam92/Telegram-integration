@@ -8,7 +8,7 @@ const { managePlatformAccounts, setActivePlatformAccount } = require('./platform
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
   const chatId = from.id.toString();
-
+  console.log(`Received callback query: ${data} from chatId: ${chatId}`);
   try {
     switch (true) {
       case data.startsWith('trend_'):
@@ -33,11 +33,11 @@ module.exports = async (bot, callbackQuery) => {
         return managePlatformAccounts(bot, chatId, platformName);
       }
 
-      case data.startsWith('platform_set_active_'): {
-        const [platformName, accountId] = data.split('_').slice(2);
-        return setActivePlatformAccount(bot, chatId, platformName, accountId);
+      case data.startsWith('PSA'): {
+        const [ prefix, platformName, userId, accountId ] = data.split('/') ;
+        return setActivePlatformAccount(bot, chatId, platformName, accountId, userId);
       }
-
+      
       default:
         await bot.sendMessage(chatId, 'Invalid action. Please try again.');
     }
