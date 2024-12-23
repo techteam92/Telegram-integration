@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    activePlatform: {
+      type: String,
+      default: null,
+    },
     trendSettings: {
       tradeAmount: {
         type: String,

@@ -180,6 +180,50 @@ const getPlatformAccounts = async (userId, platformName) => {
   return platform?.accounts || [];
 };
 
+const getActivePlatformAccount = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user || !user.activePlatform) {
+      throw new Error(`Active platform not set for user with ID: ${userId}`);
+    }
+    const platform = await Platform.findOne({
+      userId,
+      platformName: user.activePlatform,
+    });
+    if (!platform) {
+      throw new Error(`No platform details found for user with ID: ${userId} and platform: ${user.activePlatform}`);
+    }
+    const activeAccount = platform.accounts.find((account) => account.isActive);
+    if (!activeAccount) {
+      throw new Error(`No active account found for platform: ${user.activePlatform}`);
+    }
+    return {
+      platformName: platform.platformName,
+      activeAccount,
+      accessToken: platform.accessToken,
+      tokenExpiry: platform.tokenExpiry,
+    };
+  } catch (error) {
+    console.error(`Error fetching active platform account for user ${userId}: ${error.message}`);
+    throw new Error('Failed to fetch active platform account.');
+  }
+};
+
+
+const setActivePlatform = async (telegramId, platformName) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { telegramId },
+      { activePlatform: platformName },
+      { new: true }
+    );
+    return user;
+  } catch (error) {
+    console.error(`Error setting active platform for user ${telegramId}: ${error.message}`);
+    throw new Error('Failed to set active platform.');
+  }
+};
+
 const setActivePlatformAccount = async (userId, platformName, accountId) => {
   await Platform.updateOne(
     { userId, platformName, 'accounts.accountId': accountId },
@@ -187,6 +231,18 @@ const setActivePlatformAccount = async (userId, platformName, accountId) => {
   );
   return Platform.findOne({ userId, platformName });
 };
+
+const getActivePlatform = async (userId) => {
+  try {
+    const user = await User.findOne({ _id: userId });
+    if (!user) throw new Error(`User with Telegram ID ${telegramId} not found.`);
+    return user.activePlatform;
+  } catch (error) {
+    console.error(`Error fetching active platform for user ${telegramId}: ${error.message}`);
+    throw new Error('Failed to fetch active platform.');
+  }
+};
+
 
 const addPlatformAccount = async (userId, platformName, account) => {
   try {
@@ -229,6 +285,15 @@ const createOrUpdatePlatform = async (userId, platformName, accessToken, tokenEx
   }
 };
 
+const updatePlatformAccounts = async (userId, platformName, accounts) => {
+  return Platform.findOneAndUpdate(
+    { userId, platformName },
+    { $set: { accounts } },
+    { new: true } 
+  ).exec();
+};
+
+
 module.exports = {
   createUser,
   getUserByTelegramId,
@@ -248,8 +313,12 @@ module.exports = {
   updateUserTimeframes, 
   getSubscribedUsersWithTimeframe, 
   getPlatformAccounts,
+  getActivePlatformAccount,
+  setActivePlatform,
+  getActivePlatform,
   setActivePlatformAccount,
   addPlatformAccount,
   createOrUpdatePlatform,
-  checkPlatformAccount
+  checkPlatformAccount,
+  updatePlatformAccounts
 };

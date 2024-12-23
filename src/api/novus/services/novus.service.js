@@ -207,9 +207,8 @@ const getOrderHistory = async (account, authorizationHeader, filters = {}) => {
   const url = `${ORDER_URL}/${encodeURIComponent(account)}/orders/history`;
 
   const defaultParams = {
-    limit: 100,
+    limit: 9,
     page: 1,
-    pageSize: 50,
   };
 
   const params = { ...defaultParams, ...filters };
@@ -294,6 +293,87 @@ const getUsers = async (authorizationHeader, filters = {}) => {
   }
 };
 
+const getAccountMetrics = async (account, authorizationHeader) => {
+  if (!authorizationHeader || !authorizationHeader.startsWith('DXAPI ')) {
+    throw new Error(
+      'Authorization token is required in the format "DXAPI <session token>" or "DXAPI principal="<API principal>", timestamp=<timestamp>, hash="<HMAC hash>"',
+    );
+  }
+
+  const url = `${ORDER_URL}/${encodeURIComponent(account)}/metrics`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: authorizationHeader,
+        Accept: 'application/json',
+      },
+    });
+    return {
+      status: 'OK',
+      orders: response.data
+    };
+  } catch (error) {
+    if (error.response) {
+      const errorCode = error.response.data.errorCode || 'Unknown';
+      const description = error.response.data.description || 'Unknown error';
+      const statusCode = error.response.status;
+
+      switch (statusCode) {
+        case 400:
+          throw new Error(`Malformed request: ${errorCode} - ${description}`);
+        case 401:
+          throw new Error(`Authorization required: ${errorCode} - ${description}`);
+        default:
+          throw new Error(`Request failed: ${errorCode} - ${description}`);
+      }
+    } else {
+      throw new Error('Error connecting to the open orders service');
+    }
+  }
+};
+
+const getAccountPosition = async (account, authorizationHeader) => {
+  if (!authorizationHeader || !authorizationHeader.startsWith('DXAPI ')) {
+    throw new Error(
+      'Authorization token is required in the format "DXAPI <session token>" or "DXAPI principal="<API principal>", timestamp=<timestamp>, hash="<HMAC hash>"',
+    );
+  }
+
+  const url = `${ORDER_URL}/${encodeURIComponent(account)}/positions`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: authorizationHeader,
+        Accept: 'application/json',
+      },
+    });
+    return {
+      status: 'OK',
+      orders: response.data
+    };
+  } catch (error) {
+    if (error.response) {
+      const errorCode = error.response.data.errorCode || 'Unknown';
+      const description = error.response.data.description || 'Unknown error';
+      const statusCode = error.response.status;
+
+      switch (statusCode) {
+        case 400:
+          throw new Error(`Malformed request: ${errorCode} - ${description}`);
+        case 401:
+          throw new Error(`Authorization required: ${errorCode} - ${description}`);
+        default:
+          throw new Error(`Request failed: ${errorCode} - ${description}`);
+      }
+    } else {
+      throw new Error('Error connecting to the open orders service');
+    }
+  }
+};
+
+
 module.exports = {
   loginUser,
   logoutUser,
@@ -302,4 +382,6 @@ module.exports = {
   getOpenOrders,
   getOrderHistory,
   getUsers,
+  getAccountMetrics,
+  getAccountPosition,
 };

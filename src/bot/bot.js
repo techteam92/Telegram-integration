@@ -12,7 +12,7 @@ const unsubscribeHandler = require('./handlers/unsubscribeHandler');
 const billingInfoHandler = require('./handlers/billingInfoHandler');
 const setTimeframeHandler = require('./handlers/setTimeframeHandler');
 const platformAccountHandler = require('./handlers/platformAccountHandler');
-
+const accountInfoHandler = require('./handlers/accountInfoHandler');
 const bot = new TelegramBot(config.botToken, { polling: true });
 const mainMenuKeyboard = {
   reply_markup: {
@@ -22,7 +22,7 @@ const mainMenuKeyboard = {
       [{ text: 'Connect Account' }, { text: 'Set Timeframes' }],
       [{ text: 'Subscribe' }, { text: 'Billing Info' }],
       [{ text: 'Help' }, { text: 'Unsubscribe' }],
-      [{ text: 'Manage Accounts'}],
+      [{ text: 'Select Account'}, { text: 'Account Info' }],
     ],
     resize_keyboard: true,
   },
@@ -79,8 +79,11 @@ bot.on('message', async (msg) => {
     case 'Set Timeframes':
       return setTimeframeHandler(bot, chatId, user);
 
-    case 'Manage Accounts': 
+    case 'Select Account': 
       return platformAccountHandler(bot, chatId);
+
+    case 'Account Info':
+      return accountInfoHandler(bot, chatId);
 
     case 'Subscribe':
       return subscribeHandler(bot, chatId, user);
@@ -103,8 +106,8 @@ bot.on('callback_query', (callbackQuery) => {
   callbackHandler(bot, callbackQuery);
 });
 
-// bot.on('polling_error', (error) => {
-//   console.error(`Polling error: ${error.message}`);
-// });
+bot.on('polling_error', (error) => {
+  return;
+});
 
 module.exports = bot;

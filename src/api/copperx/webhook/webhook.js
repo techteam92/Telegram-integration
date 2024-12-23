@@ -53,59 +53,22 @@ router.post('/signals', async (req, res) => {
   try {
     console.log('Processing signal webhook from TradingView');
     console.log("req.body:", req.body);
-    const { body } = req;
-    console.log('Received Signal Data:', body);
-    if (!body || !body.text) {
+    if (!req.body) {
       console.error('No text data received.');
       return res.status(400).send('Invalid request: no text data.');
     }
 
-    const signalText = body.text;
-    console.log('Received Signal Text:', signalText);
 
-    const sideMatch = signalText.match(/🚀(BUY|SELL)\s*:\s*([\d.]+)/i);
-    const tp1Match = signalText.match(/💰Take Profit 1\s*:\s*([\d.]+)/i);
-    const tp2Match = signalText.match(/💰Take Profit 2\s*:\s*([\d.]+)/i);
-    const tp3Match = signalText.match(/💰Take Profit 3\s*:\s*([\d.]+)/i);
-    const slMatch = signalText.match(/🛑Stop loss\s*:\s*([\d.]+)/i);
-    const timeframeMatch = signalText.match(/Timeframe:\s*(\d+)/i);
-    const side_ = sideMatch ? sideMatch[1].toUpperCase() : 'N/A';
-    const price = sideMatch ? sideMatch[2] : 'N/A';
-    const tp1 = tp1Match ? tp1Match[1] : 'N/A';
-    const tp2 = tp2Match ? tp2Match[1] : 'N/A';
-    const tp3 = tp3Match ? tp3Match[1] : 'N/A';
-    const sl = slMatch ? slMatch[1] : 'N/A';
-    const currentTimeframe = timeframeMatch ? timeframeMatch[1] : 'N/A';
+    // const users = await userService.getSubscribedUsersWithTimeframe(currentTimeframe);
 
-    console.log('Parsed Signal Data:', { side_, price, tp1, tp2, tp3, sl, currentTimeframe });
-    if (side_ === 'N/A' || price === 'N/A' || sl === 'N/A') {
-      console.error('Failed to parse required fields from the signal.');
-      return res.status(400).send('Invalid signal format: required fields missing.');
-    }
-
-    const signalMessage = `
-        📊 *New Signal Received*
-        ⏳ *Timeframe*: ${currentTimeframe}
-        🚀 *Side*: ${side_}
-        💵 *Entry Price*: ${price}
-        💰 *Take Profit 1*: ${tp1}
-        💰 *Take Profit 2*: ${tp2}
-        💰 *Take Profit 3*: ${tp3}
-        🛑 *Stop Loss*: ${sl}
-        📈 *Strategy*: SOLOTREND X
-        `;
-
-    console.log('Formatted Signal Message:', signalMessage);
-    const users = await userService.getSubscribedUsersWithTimeframe(currentTimeframe);
-
-    if (!users || users.length === 0) {
-      console.log(`No users found for the timeframe: ${currentTimeframe}`);
-      return res.status(200).send('No users found for the specified timeframe.');
-    }
-    for (const user of users) {
-      await bot.sendMessage(user.telegramId, signalMessage, { parse_mode: 'Markdown' });
-    }
-    console.log(`Signal successfully sent to ${users.length} users.`);
+    // if (!users || users.length === 0) {
+    //   console.log(`No users found for the timeframe: ${currentTimeframe}`);
+    //   return res.status(200).send('No users found for the specified timeframe.');
+    // }
+    // for (const user of users) {
+    //   await bot.sendMessage(user.telegramId, signalMessage, { parse_mode: 'Markdown' });
+    // }
+    // console.log(`Signal successfully sent to ${users.length} users.`);
     res.status(200).send('Signal processed and sent successfully.');
   } catch (error) {
     console.error(`Error processing TradingView signal: ${error.message}`);

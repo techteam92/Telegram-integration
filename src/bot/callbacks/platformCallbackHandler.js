@@ -88,6 +88,13 @@ const setActivePlatformAccount = async (bot, chatId, platformName, accountId, us
     if (!platform) {
       return bot.sendMessage(chatId, `Failed to set active account for ${platformName}. Please connect your account again.`);
     }
+    platform.accounts = platform.accounts.map((account) => ({
+      ...account.toObject(),
+      isActive: account.accountId === accountId,
+    }));
+    await userService.updatePlatformAccounts(userId, platformName, platform.accounts);
+    console.log(`Active account for ${platformName} set to: ${accountId}`);
+    console.log(platform.accounts);
     await bot.sendMessage(chatId, `Successfully set active account: ${accountId} for ${platformName}. 🎉`);
   } catch (error) {
     console.error(`Error setting active account for ${platformName}: ${error.message}`);

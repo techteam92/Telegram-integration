@@ -16,15 +16,42 @@ module.exports = async (bot, msg) => {
             return;
         }
 
-        await userService.updateUser(user._id, { 
-            subscriptionStatus: 'inactive',
-            signalStatus: 'inactive'
-        });
-        
-        await bot.sendMessage(
+        const confirmMessage = await bot.sendMessage(
             chatId,
-            "Sorry to see you go. Best of luck in your trading journey!"
+            "Are you sure you want to unsubscribe? Please reply with 'yes' to confirm or 'no' to cancel.",
+            {
+                reply_markup: {
+                    keyboard: [['yes', 'no']],
+                    one_time_keyboard: true,
+                    resize_keyboard: true
+                }
+            }
         );
+
+        bot.once('message', async (confirmMsg) => {
+            if (confirmMsg.text.toLowerCase() === 'yes') {
+                await userService.updateUserSubscriptionStatus(telegramId, 'inactive');
+                await bot.sendMessage(
+                    chatId,
+                    "Sorry to see you go. Best of luck in your trading journey!",
+                    {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    }
+                );
+            } else {
+                await bot.sendMessage(
+                    chatId,
+                    "Unsubscribe cancelled. We're glad you're staying with us!",
+                    {
+                        reply_markup: {
+                            remove_keyboard: true
+                        }
+                    }
+                );
+            }
+        });
     } catch (error) {
         logger.error(`Error in /unsubscribe command: ${error.message}`);
         await bot.sendMessage(

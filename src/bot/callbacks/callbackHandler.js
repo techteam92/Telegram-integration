@@ -4,6 +4,7 @@ const { handleConnectAccount } = require('./connectAccountCallbacks');
 const { handleSubscriptionCallbacks } = require('./subscriptionCallbacks');
 const { toggleTimeframe } = require('./toggleTimeframeCallback');
 const { managePlatformAccounts, setActivePlatformAccount } = require('./platformCallbackHandler');
+const handleAccountInfoCallback = require('./accountInfoCallbacks');
 
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -33,9 +34,13 @@ module.exports = async (bot, callbackQuery) => {
         return managePlatformAccounts(bot, chatId, platformName);
       }
 
-      case data.startsWith('PSA'): {
+      case data.startsWith('PSA/'): {
         const [ prefix, platformName, userId, accountId ] = data.split('/') ;
         return setActivePlatformAccount(bot, chatId, platformName, accountId, userId);
+      }
+
+      case data.startsWith('INFO/'): {
+        return handleAccountInfoCallback(bot, chatId, data);
       }
       
       default:
