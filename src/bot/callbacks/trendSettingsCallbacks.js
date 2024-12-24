@@ -1,67 +1,34 @@
 const userService = require('../../api/user/service/user.service');
+const startSignalHandler = require('../handlers/startSignalHandler');
+const stopSignalHandler = require('../handlers/stopSignalHandler');
+const setUnitHandler = require('../handlers/setUnitsHandler');
+const setTimeframeHandler = require('../handlers/setTimeframeHandler');
+const setCurrencyPairHandler = require('../handlers/setCurrencyPairsHandler');  // Importing the new handler
 
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
   const chatId = from.id.toString();
 
-  if (data === 'trend_tradeType') {
-    const tradeTypeKeyboard = {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: 'Demo', callback_data: 'trend_tradeType_demo' }],
-          [{ text: 'Live', callback_data: 'trend_tradeType_live' }],
-        ],
-      },
-    };
+  switch (data) {
+    case 'trend_startSignal':
+      const userForStartSignal = await userService.getUserByTelegramId(chatId); // Fetch user details
+      return startSignalHandler(bot, chatId, userForStartSignal);
 
-    await bot.sendMessage(chatId, 'Select your trade type:', tradeTypeKeyboard);
-  } else if (data.startsWith('trend_tradeType_')) {
-    const tradeType = data.split('_')[2];
-    await userService.updateUserTrendSettings(chatId, { tradeType });
-    await bot.sendMessage(chatId, `Trade type updated to ${tradeType}.`);
-  } else if (data.startsWith('trend_amount_')) {
-    const amount = `$${data.split('_')[2]}`;
-    await userService.updateUserTrendSettings(chatId, { tradeAmount: amount });
-    await bot.sendMessage(chatId, `Trade amount updated to ${amount}.`);
-  } else if (data === 'trend_autoTrade') {
-    const autoTradeKeyboard = {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: 'On', callback_data: 'trend_autoTrade_on' }],
-          [{ text: 'Off', callback_data: 'trend_autoTrade_off' }],
-        ],
-      },
-    };
+    case 'trend_stopSignal':
+      return stopSignalHandler(bot, chatId);
 
-    await bot.sendMessage(chatId, 'Enable or disable auto-trade:', autoTradeKeyboard);
-  } else if (data.startsWith('trend_autoTrade_')) {
-    const autoTrade = data.split('_')[2] === 'on';
-    await userService.updateUserTrendSettings(chatId, { autoTrade });
-    await bot.sendMessage(chatId, `Auto-trade is now ${autoTrade ? 'enabled' : 'disabled'}.`);
-  } else if (data === 'trend_disconnect') {
-    const connectedAccounts = await userService.getUserByTelegramId(chatId).connectedAccounts;
+    case 'trend_setUnits':
+      return setUnitHandler(bot, chatId);
 
-    if (connectedAccounts.length === 0) {
-      return bot.sendMessage(chatId, 'No connected accounts to disconnect.');
-    }
+    case 'trend_setTimeframes':
+      const userForTimeframe = await userService.getUserByTelegramId(chatId); // Fetch user details
+      return setTimeframeHandler(bot, chatId, userForTimeframe);
 
-    const disconnectKeyboard = {
-      reply_markup: {
-        inline_keyboard: connectedAccounts.map((account) => [
-          {
-            text: `${account.accountType} (${account.accountId})`,
-            callback_data: `trend_disconnect_${account.accountType}`,
-          },
-        ]),
-      },
-    };
+    case 'trend_setCurrencyPairs':  // New case for currency pair handling
+      const userForCurrencyPairs = await userService.getUserByTelegramId(chatId); // Fetch user details
+      return setCurrencyPairHandler(bot, chatId, userForCurrencyPairs);  // Calling the new handler
 
-    await bot.sendMessage(chatId, 'Select an account to disconnect:', disconnectKeyboard);
-  } else if (data.startsWith('trend_disconnect_')) {
-    const accountType = data.split('_')[2];
-    await userService.disconnectUserAccount(chatId, accountType);
-    await bot.sendMessage(chatId, `${accountType} account disconnected.`);
-  } else {
-    await bot.sendMessage(chatId, 'Invalid trend settings action. Please try again.');
+    default:
+      return bot.sendMessage(chatId, 'Invalid trend settings action. Please try again.');
   }
 };
