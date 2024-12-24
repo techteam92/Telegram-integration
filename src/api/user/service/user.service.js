@@ -160,6 +160,20 @@ const updateUserTimeframes = async (telegramId, timeframes) => {
   );
 };
 
+const getUsersByTradePreferences = async (symbol, timeframe) => {
+  try {
+    return await User.find({
+      subscriptionStatus: 'active',
+      isReceivingSignals: true,
+      'trendSettings.currencyPairs': symbol,
+      'trendSettings.timeframes': timeframe,
+    });
+  } catch (error) {
+    console.log(`Error fetching users by preferences: ${error}`);
+    throw error;
+  }
+};
+
 const getSubscribedUsersWithTimeframe = async (timeframe) => {
   return await User.find({
     subscriptionStatus: 'active',
@@ -310,7 +324,8 @@ module.exports = {
   updateUserReceivingSignals,
   updateUserTrendSettings,
   updateUserAccountDetails,
-  updateUserTimeframes, 
+  updateUserTimeframes,
+  getUsersByTradePreferences, 
   getSubscribedUsersWithTimeframe, 
   getPlatformAccounts,
   getActivePlatformAccount,

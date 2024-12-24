@@ -4,6 +4,7 @@ const userService = require('../user/service/user.service');
 const logger = require('../../common/utils/logger');
 const bot = require('../../bot/bot');
 const config = require('../../common/config/config');
+const SignalManager = require('../signals/service/signal.service');
 
 router.post('/copperx/paymentStatus', async (req, res) => {
   try {
@@ -51,28 +52,15 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 
 router.post('/signals', async (req, res) => {
   try {
-    console.log('Processing signal webhook from TradingView');
-    console.log("req.body:", req.body);
-    if (!req.body) {
-      console.error('No text data received.');
-      return res.status(400).send('Invalid request: no text data.');
+    const signal = req.body;
+    if (!signal.symbol || !signal.currentTimeframe || !signal.side || !signal.price || !signal.sl || !signal.tp1) {
+      return res.status(400).json({ error: 'Invalid signal data' });
     }
-
-
-    // const users = await userService.getSubscribedUsersWithTimeframe(currentTimeframe);
-
-    // if (!users || users.length === 0) {
-    //   console.log(`No users found for the timeframe: ${currentTimeframe}`);
-    //   return res.status(200).send('No users found for the specified timeframe.');
-    // }
-    // for (const user of users) {
-    //   await bot.sendMessage(user.telegramId, signalMessage, { parse_mode: 'Markdown' });
-    // }
-    // console.log(`Signal successfully sent to ${users.length} users.`);
-    res.status(200).send('Signal processed and sent successfully.');
+    await SignalManager(signal);
+    res.status(200).json({ message: 'Signal processed successfully' });
   } catch (error) {
-    console.error(`Error processing TradingView signal: ${error.message}`);
-    res.status(500).send('Internal server error.');
+    console.error(`Error in webhook handler: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

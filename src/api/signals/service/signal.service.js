@@ -1,38 +1,35 @@
-const axios = require('axios');
-const Signal = require('../models/signal.model');
-const fetchSignalData = async () => {
+const userService = require('../../user/service/user.service');
+const bot = require('../../../bot/bot');
+
+const SignalManager = async (signal) => {
   try {
-    const response = await axios.get('http://145.223.120.95:8000/get-signal-data/GBPUSD/minute/5');
-    const { status, signal } = response.data;    
-    if (status === 'Success') {
-      const signalData = signal[0]; 
-      if (signalData.buy || signalData.sell) {
-        const timestampUTC = new Date(signalData.timestamp + ' UTC').getTime()
-        const oandaSymbol = signalData.symbol.slice(0, 3) + '_' + signalData.symbol.slice(3);
-        const newSignal = new Signal({
-          symbol: oandaSymbol,
-          interval: 'minute',
-          period: 10,
-          buy: signalData.buy,
-          sell: signalData.sell,
-          pivlow: signalData.pivlow,
-          pivhigh: signalData.pivhigh,
-          tp_lg: signalData.tp_lg,
-          tp_sh: signalData.tp_sh,
-          timestamp: timestampUTC,
-          strategyName: response.data["strategy-name"],
-          strategyDescription: response.data["strategy-name"],
-        });
-        await newSignal.save();
-        return newSignal;
-      } else {
-        return null; 
-      }
+    console.log('Received signal:', signal);
+    const { side, tp1, tp2, tp3, sl, currentTimeframe, symbol, price } = signal;
+    console.log(`Processing signal for symbol: ${symbol} and timeframe: ${currentTimeframe}`);
+    const users = await userService.getUsersByTradePreferences(symbol, currentTimeframe);
+
+    if (!users || users.length === 0) {
+      console.log(`No users found for symbol: ${symbol} and timeframe: ${currentTimeframe}`);
+      return;
+    }
+    for (const user of users) {
+      const { telegramId } = user;
+      const signalMessage = `
+<b>📈 Trade Signal</b>
+<b>Symbol:</b> ${symbol}
+<b>Side:</b> ${side}
+<b>Entry Price:</b> ${price}
+<b>Stop Loss (SL):</b> ${sl}
+<b>Take Profit Levels:</b>
+  - TP1: ${tp1}
+  - TP2: ${tp2}
+  - TP3: ${tp3}
+<b>Timeframe:</b> ${currentTimeframe}m`;
+      await bot.sendMessage(telegramId, signalMessage, { parse_mode: 'html' });
     }
   } catch (error) {
-    console.error('Error fetching signal data:', error);
-    return null;
+    console.log(`Error in SignalManager: ${error}`);
   }
 };
 
-module.exports = fetchSignalData;
+module.exports = SignalManager;

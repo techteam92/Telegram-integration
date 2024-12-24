@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isReceivingSignals: {
+      type: Boolean,
+      default: false,
+    },
     subscriptionPlan: {
       type: String,
       enum: ['Monthly', 'Annually'],
@@ -61,6 +65,10 @@ const userSchema = new mongoose.Schema(
         type: [String], 
         enum: ['1m', '5m', '10m', '15m', '30m', '60m'],
         default: ['1m'],
+      },
+      currencyPairs: {
+        type: [String],
+        default: ['USDJPY', 'EURUSD'], 
       },
     },
   },
