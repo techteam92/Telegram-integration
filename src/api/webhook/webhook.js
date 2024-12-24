@@ -53,13 +53,11 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 router.post('/signals', async (req, res) => {
   try {
     const signal = req.body;
-    if (!signal.symbol || !signal.currentTimeframe || !signal.side || !signal.price || !signal.sl || !signal.tp1) {
-      return res.status(400).json({ error: 'Invalid signal data' });
-    }
+    console.log('Received signal:', signal, signal.side, signal["side"]);
     await SignalManager(signal);
     res.status(200).json({ message: 'Signal processed successfully' });
   } catch (error) {
-    console.error(`Error in webhook handler: ${error.message}`);
+    console.log(`Error in webhook handler: ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

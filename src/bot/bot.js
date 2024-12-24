@@ -1,19 +1,16 @@
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('../common/config/config');
 const callbackHandler = require('./callbacks/callbackHandler');
-const startSignalHandler = require('./handlers/startSignalHandler');
-const stopSignalHandler = require('./handlers/stopSignalHandler');
 const trendSettingHandler = require('./handlers/trendSettingHandler');
-const setUnitsHandler = require('./handlers/setUnitsHandler');
 const userService = require('../api/user/service/user.service');
 const connectAccountHandler = require('./handlers/connectAccountHandler');
 const subscribeHandler = require('./handlers/subscribeHandler');
 const unsubscribeHandler = require('./handlers/unsubscribeHandler');
 const billingInfoHandler = require('./handlers/billingInfoHandler');
-const setTimeframeHandler = require('./handlers/setTimeframeHandler');
 const platformAccountHandler = require('./handlers/platformAccountHandler');
 const accountInfoHandler = require('./handlers/accountInfoHandler');
 const bot = new TelegramBot(config.botToken, { polling: true });
+
 const mainMenuKeyboard = {
   reply_markup: {
     keyboard: [
@@ -28,7 +25,7 @@ const mainMenuKeyboard = {
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
-  const username = msg.from.username || 'Anonymous';
+  const username = msg.from.username || 'Anonymous';  
   const user = await userService.getUserByTelegramId(chatId.toString());
   if (!user) {
     await userService.createUser({
