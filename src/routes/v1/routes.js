@@ -1,6 +1,6 @@
 const express = require('express');
 const healthRoutes = require("../../health/health");
-const webhookRoutes = require('../../api/copperx/webhook/webhook');
+const webhookRoutes = require('../../api/webhook/webhook');
 
 const router = express.Router();
 
