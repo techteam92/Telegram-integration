@@ -46,14 +46,13 @@ const handleNovusLoginInput = async (bot, msg, chatId) => {
       );
     }
     const userId = user._id;
-    const platform = await userService.createOrUpdatePlatform(
+    await userService.createOrUpdatePlatform(
       userId,
       'Novus',
       sessionToken,
       new Date(Date.now() + 30 * 60 * 1000)
     );
     await userService.setActivePlatform(chatId, 'Novus');
-    await userService.updateUserAccountDetails(chatId, sessionToken);
     await bot.sendMessage(chatId, 'Successfully connected to Novus! 🎉');
   } catch (error) {
     console.error(`Error logging in to Novus for chatId ${chatId}: ${error.message}`);

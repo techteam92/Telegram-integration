@@ -3,7 +3,6 @@ const router = express.Router();
 const userService = require('../user/service/user.service');
 const logger = require('../../common/utils/logger');
 const bot = require('../../bot/bot');
-const config = require('../../common/config/config');
 const SignalManager = require('../signals/service/signal.service');
 
 router.post('/copperx/paymentStatus', async (req, res) => {
@@ -52,8 +51,8 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 
 router.post('/signals', async (req, res) => {
   try {
-    const signal = req.body;
-    console.log('Received signal:', signal, signal.side, signal["side"]);
+    let signal = req.body;
+    signal = JSON.parse(cleanJSON(signal))
     await SignalManager(signal);
     res.status(200).json({ message: 'Signal processed successfully' });
   } catch (error) {
@@ -61,6 +60,13 @@ router.post('/signals', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+const cleanJSON = (malformedJSON) => {
+  return malformedJSON
+    .replace(/,\s*}/g, '}') 
+    .replace(/\n/g, '') 
+    .trim(); 
+};
 
 const webhookRoutes = {
   path: '/webhook',

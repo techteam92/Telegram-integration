@@ -35,31 +35,14 @@ const userSchema = new mongoose.Schema(
       enum: ['Monthly', 'Annually'],
       default: null,
     },
-    units: {
-      type: String,
-      default: '100',
-    },
-    tradeType: {
-      type: String,
-      enum: ['Demo', 'Live'],
-      default: 'Demo',
-    },
-    autoTrade: {
-      type: Boolean,
-      default: false,
-    },
     activePlatform: {
       type: String,
       default: null,
     },
     trendSettings: {
-      tradeAmount: {
+      unit: {
         type: String,
         default: '1$',
-      },
-      autoTrade: {
-        type: Boolean,
-        default: false,
       },
       timeframes: {
         type: [String], 

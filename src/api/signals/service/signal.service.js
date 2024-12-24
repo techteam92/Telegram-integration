@@ -4,10 +4,10 @@ const bot = require('../../../bot/bot');
 const SignalManager = async (signal) => {
   try {
     const { side, tp1, tp2, tp3, sl, currentTimeframe, symbol, price } = signal;
-    console.log(`Processing signal for symbol: ${symbol} and timeframe: ${currentTimeframe}`);
-    const users = await userService.getUsersByTradePreferences(symbol, currentTimeframe);
+    console.log(`Processing signal for symbol: ${symbol} and timeframe: ${currentTimeframe}m`);
+    const users = await userService.getUsersByTradePreferences(symbol, `${currentTimeframe}m`);    
     if (!users || users.length === 0) {
-      console.log(`No users found for symbol: ${symbol} and timeframe: ${currentTimeframe}`);
+      console.log(`No users found for symbol: ${symbol} and timeframe: ${currentTimeframe}m`);
       return;
     }
     for (const user of users) {

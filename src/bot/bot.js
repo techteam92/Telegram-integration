@@ -9,6 +9,7 @@ const unsubscribeHandler = require('./handlers/unsubscribeHandler');
 const billingInfoHandler = require('./handlers/billingInfoHandler');
 const platformAccountHandler = require('./handlers/platformAccountHandler');
 const accountInfoHandler = require('./handlers/accountInfoHandler');
+const startMessage = require('./messages/startMessage');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 const mainMenuKeyboard = {
