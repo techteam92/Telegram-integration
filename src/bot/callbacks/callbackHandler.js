@@ -3,6 +3,7 @@ const setUnitsCallbacks = require('./setUnitsCallbacks');
 const { handleConnectAccount } = require('./connectAccountCallbacks');
 const { handleSubscriptionCallbacks } = require('./subscriptionCallbacks');
 const { toggleTimeframe } = require('./toggleTimeframeCallback');
+const { toggleCurrencyPair } = require('./toggleCurrencyPairCallback'); // Import the currency pair handler
 const { managePlatformAccounts, setActivePlatformAccount } = require('./platformCallbackHandler');
 const handleAccountInfoCallback = require('./accountInfoCallbacks');
 
@@ -29,13 +30,18 @@ module.exports = async (bot, callbackQuery) => {
         return toggleTimeframe(bot, chatId, timeframe);
       }
 
+      case data.startsWith('currencypair_toggle_'): { // New case for currency pair toggle
+        const currencyPair = data.split('_')[2];
+        return toggleCurrencyPair(bot, chatId, currencyPair); // Call the currency pair handler
+      }
+
       case data.startsWith('platform_manage_'): {
         const platformName = data.split('_')[2];
         return managePlatformAccounts(bot, chatId, platformName);
       }
 
       case data.startsWith('PSA/'): {
-        const [ prefix, platformName, userId, accountId ] = data.split('/') ;
+        const [ prefix, platformName, userId, accountId ] = data.split('/');
         return setActivePlatformAccount(bot, chatId, platformName, accountId, userId);
       }
 

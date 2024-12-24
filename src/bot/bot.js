@@ -17,9 +17,7 @@ const bot = new TelegramBot(config.botToken, { polling: true });
 const mainMenuKeyboard = {
   reply_markup: {
     keyboard: [
-      [{ text: 'Start Signal' }, { text: 'Stop Signal' }],
-      [{ text: 'Trend Settings' }, { text: 'Set Units' }],
-      [{ text: 'Connect Account' }, { text: 'Set Timeframes' }],
+      [{ text: 'Trend Settings' }, { text: 'Connect Account' }],
       [{ text: 'Subscribe' }, { text: 'Billing Info' }],
       [{ text: 'Help' }, { text: 'Unsubscribe' }],
       [{ text: 'Select Account'}, { text: 'Account Info' }],
@@ -61,23 +59,11 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, 'Your subscription is inactive. Please subscribe to use this feature.');
   }
   switch (msg.text) {
-    case 'Start Signal':
-      return startSignalHandler(bot, chatId, user);
-
-    case 'Stop Signal':
-      return stopSignalHandler(bot, chatId);
-
     case 'Trend Settings':
       return trendSettingHandler(bot, chatId);
 
-    case 'Set Units':
-      return setUnitsHandler(bot, chatId);
-
     case 'Connect Account':
       return connectAccountHandler.initiateConnectAccount(bot, chatId);
-
-    case 'Set Timeframes':
-      return setTimeframeHandler(bot, chatId, user);
 
     case 'Select Account': 
       return platformAccountHandler(bot, chatId);

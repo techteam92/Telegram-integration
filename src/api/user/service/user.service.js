@@ -160,6 +160,22 @@ const updateUserTimeframes = async (telegramId, timeframes) => {
   );
 };
 
+const updateUserCurrencyPairs = async (telegramId, currencies) => {
+  const allowedCurrencies = ['USDJPY', 'EURUSD', 'GBPUSD', 'AUDUSD', 'USDCHF', 'USDCAD', 'NZDUSD'];
+  const validatedCurrencies = currencies.filter((currency) => allowedCurrencies.includes(currency));
+
+  if (validatedCurrencies.length === 0) {
+    validatedCurrencies.push('USDJPY', 'EURUSD');
+  }
+
+  return await User.findOneAndUpdate(
+    { telegramId },
+    { $set: { 'trendSettings.currencyPairs': validatedCurrencies } },
+    { new: true }
+  );
+};
+
+
 const getUsersByTradePreferences = async (symbol, timeframe) => {
   try {
     return await User.find({
@@ -325,6 +341,7 @@ module.exports = {
   updateUserTrendSettings,
   updateUserAccountDetails,
   updateUserTimeframes,
+  updateUserCurrencyPairs,
   getUsersByTradePreferences, 
   getSubscribedUsersWithTimeframe, 
   getPlatformAccounts,
