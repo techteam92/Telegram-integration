@@ -70,7 +70,7 @@ const updateUserReceivingSignals = async (telegramId, isReceivingSignals) => {
 };
 
 const updateUserTimeframes = async (telegramId, timeframes) => {
-  const allowedTimeframes = ['1m', '5m', '10m', '15m', '30m', '1hr'];
+  const allowedTimeframes = ['1m', '5m', '10m', '15m', '30m', '60m'];
   const validatedTimeframes = timeframes.filter((tf) => allowedTimeframes.includes(tf));
 
   if (validatedTimeframes.length === 0) {
@@ -97,6 +97,19 @@ const updateUserCurrencyPairs = async (telegramId, currencies) => {
     { $set: { 'trendSettings.currencyPairs': validatedCurrencies } },
     { new: true }
   );
+};
+
+const getUserTradeUnits = async (telegramId) => {
+  try {
+    const user = await User.findOne({ telegramId });
+    if (!user || !user.trendSettings || !user.trendSettings.unit) {
+      throw new Error(`Trade units not found for user with Telegram ID: ${telegramId}`);
+    }
+    return user.trendSettings.unit;
+  } catch (error) {
+    console.error(`Error fetching trade units for user ${telegramId}: ${error.message}`);
+    throw new Error('Failed to fetch trade units.');
+  }
 };
 
 
@@ -248,6 +261,29 @@ const updatePlatformAccounts = async (userId, platformName, accounts) => {
   ).exec();
 };
 
+const getActivePlatformDetails = async (userId, platformName) => {
+  try {
+    const platform = await Platform.findOne({ userId, platformName });
+    if (!platform || !platform.accessToken) {
+      throw new Error(`Platform data not found or access token missing for user ID: ${userId}`);
+    }
+
+    const activeAccount = platform.accounts.find((account) => account.isActive);
+    if (!activeAccount) {
+      throw new Error(`No active account found for platform: ${platformName}`);
+    }
+
+    return {
+      accessToken: platform.accessToken,
+      activeAccountId: activeAccount.accountId,
+    };
+  } catch (error) {
+    console.error(`Error fetching active platform details for user ${userId}: ${error.message}`);
+    throw new Error('Failed to fetch active platform details.');
+  }
+};
+
+
 
 module.exports = {
   createUser,
@@ -260,9 +296,10 @@ module.exports = {
   updateUserReceivingSignals,
   updateUserTimeframes,
   updateUserCurrencyPairs,
+  getUserTradeUnits,
   getUsersByTradePreferences, 
   getSubscribedUsersWithTimeframe, 
-  getPlatformAccounts,
+  getPlatformAccounts,  
   getActivePlatformAccount,
   setActivePlatform,
   getActivePlatform,
@@ -270,5 +307,6 @@ module.exports = {
   addPlatformAccount,
   createOrUpdatePlatform,
   checkPlatformAccount,
-  updatePlatformAccounts
+  updatePlatformAccounts,
+  getActivePlatformDetails
 };
