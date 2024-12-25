@@ -3,7 +3,7 @@ const router = express.Router();
 const userService = require('../user/service/user.service');
 const logger = require('../../common/utils/logger');
 const bot = require('../../bot/bot');
-const SignalManager = require('../signals/service/signal.service');
+const signalService = require('../signals/service/signal.service');
 
 router.post('/copperx/paymentStatus', async (req, res) => {
   try {
@@ -53,7 +53,7 @@ router.post('/signals', async (req, res) => {
   try {
     let signal = req.body;
     signal = JSON.parse(cleanJSON(signal))
-    await SignalManager(signal);
+    await signalService.SignalManager(signal);
     res.status(200).json({ message: 'Signal processed successfully' });
   } catch (error) {
     console.log(`Error in webhook handler: ${error}`);
