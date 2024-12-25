@@ -6,6 +6,7 @@ const { toggleTimeframe } = require('./toggleTimeframeCallback');
 const { toggleCurrencyPair } = require('./toggleCurrencyPairCallback'); 
 const { managePlatformAccounts, setActivePlatformAccount } = require('./platformCallbackHandler');
 const handleAccountInfoCallback = require('./accountInfoCallbacks');
+const signUpCallback = require('./signUpCallback');
 
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -13,6 +14,9 @@ module.exports = async (bot, callbackQuery) => {
   console.log(`Received callback query: ${data} from chatId: ${chatId}`);
   try {
     switch (true) {
+      case data.startsWith('signup_'):
+        return signUpCallback(bot, callbackQuery);
+
       case data.startsWith('trend_'):
         return trendSettingsCallbacks(bot, callbackQuery);
 

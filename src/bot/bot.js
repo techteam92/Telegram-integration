@@ -10,6 +10,7 @@ const billingInfoHandler = require('./handlers/billingInfoHandler');
 const platformAccountHandler = require('./handlers/platformAccountHandler');
 const accountInfoHandler = require('./handlers/accountInfoHandler');
 const startMessage = require('./messages/startMessage');
+const { start } = require('pm2');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 const mainMenuKeyboard = {
@@ -24,6 +25,14 @@ const mainMenuKeyboard = {
   },
 };
 
+const startMenuKeyboard = {
+  reply_markup: {
+    inline_keyboard: [
+      [{ text: ' ⬇️ [Sign Up Now] ', callback_data: 'signup_now' }],
+    ],
+  },
+};
+
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username || 'Anonymous';  
@@ -35,7 +44,7 @@ bot.onText(/\/start/, async (msg) => {
       subscriptionStatus: 'inactive',
     });
   }
-  await bot.sendMessage(chatId, 'Welcome to Solo Trend Bot! Use the keyboard buttons below to interact with the bot.', mainMenuKeyboard);
+  await bot.sendMessage(chatId, startMessage(), startMenuKeyboard);
 });
 
 bot.on('message', async (msg) => {

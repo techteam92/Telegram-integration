@@ -4,6 +4,7 @@ const userService = require('../user/service/user.service');
 const logger = require('../../common/utils/logger');
 const bot = require('../../bot/bot');
 const signalService = require('../signals/service/signal.service');
+const subscriptionSuccessMessage = require('../../bot/messages/subscriptionSuccessMessage')
 
 router.post('/copperx/paymentStatus', async (req, res) => {
   try {
@@ -41,7 +42,7 @@ router.post('/copperx/paymentStatus', async (req, res) => {
     await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate, subscriptionPlan);
     logger.info(`User ${user.telegramId} subscription updated to ${subscriptionPlan}.`);
 
-    await bot.sendMessage(user.telegramId, `Your subscription is now active and valid until ${newExpiryDate.toDateString()}.`);
+    await bot.sendMessage(user.telegramId, subscriptionSuccessMessage);
     return res.status(200).send('Subscription status updated');
   } catch (error) {
     logger.error(`Error processing Copperx webhook: ${error}`);
