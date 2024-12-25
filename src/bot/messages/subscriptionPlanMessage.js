@@ -1,9 +1,7 @@
-
 const subscriptionPlanMessage = () => {
-    return `🛠️ Setting up your subscription! 
-On Payment page please provide your: 
-📱Telegram Username: (Provide your @username) `;
-  
-  };
-  
-  module.exports = subscriptionPlanMessage;
+  return `🛠️ <b>Setting up your subscription!</b>\n
+On the Payment page, please provide your:\n
+📱 <b>Telegram Username:</b> (Provide your @username)`;
+};
+
+module.exports = subscriptionPlanMessage;
