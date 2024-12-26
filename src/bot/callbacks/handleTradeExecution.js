@@ -5,7 +5,6 @@ const novusServices = require('../../api/novus/services/novus.service');
 const handleTradeExecution = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
   const chatId = from.id.toString();
-
   try {
     const [_, action, signalId] = data.split('_');
     const { signal , validity } = await isSignalValid(signalId);

@@ -1,11 +1,10 @@
 const userService = require('../../user/service/user.service');
 const Signal = require('../models/signal.model');
-const bot = require('../../../bot/bot');
 
-const SignalManager = async (signal) => {
+const SignalManager = async (bot, signal) => {
   try {
     const { side, tp1, tp2, tp3, sl, currentTimeframe, symbol, price } = signal;
-    await saveSignal(signal);
+    const savedSignal = await saveSignal(signal);
     const signalMessage = `
 🚀✨ <b>Trade Signal Alert!!!</b> ✨🚀
 
@@ -27,9 +26,9 @@ const SignalManager = async (signal) => {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: 'Execute TP1', callback_data: `trade_tp1_${signal._id}` },
-            { text: 'Execute TP2', callback_data: `trade_tp2_${signal._id}` },
-            { text: 'Execute TP3', callback_data: `trade_tp3_${signal._id}` },
+            { text: 'Execute TP1', callback_data: `trade_tp1_${savedSignal._id}` },
+            { text: 'Execute TP2', callback_data: `trade_tp2_${savedSignal._id}` },
+            { text: 'Execute TP3', callback_data: `trade_tp3_${savedSignal._id}` },
           ],
         ],
       },
@@ -49,6 +48,7 @@ const saveSignal = async (signal) => {
     const newSignal = new Signal(signal);
     await newSignal.save();
     console.log('Signal saved successfully');
+    return newSignal;
   } catch (error) {
     console.error(`Error saving signal: ${error.message}`);
     throw error;

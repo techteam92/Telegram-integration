@@ -53,7 +53,7 @@ router.post('/signals', async (req, res) => {
   try {
     let signal = req.body;
     signal = JSON.parse(cleanJSON(signal))
-    await signalService.SignalManager(signal);
+    await signalService.SignalManager(bot, signal);
     res.status(200).json({ message: 'Signal processed successfully' });
   } catch (error) {
     console.log(`Error in webhook handler: ${error}`);
