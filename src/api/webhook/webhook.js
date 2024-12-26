@@ -42,7 +42,7 @@ router.post('/copperx/paymentStatus', async (req, res) => {
     await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate, subscriptionPlan);
     logger.info(`User ${user.telegramId} subscription updated to ${subscriptionPlan}.`);
 
-    await bot.sendMessage(user.telegramId, subscriptionSuccessMessage);
+    await bot.sendMessage(user.telegramId, subscriptionSuccessMessage(newExpiryDate));
     return res.status(200).send('Subscription status updated');
   } catch (error) {
     logger.error(`Error processing Copperx webhook: ${error}`);
