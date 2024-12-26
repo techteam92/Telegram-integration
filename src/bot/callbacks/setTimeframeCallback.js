@@ -1,5 +1,5 @@
 module.exports = async (bot, chatId, user) => {
-  const availableTimeframes = ['1m', '5m', '10m', '15m', '30m', '1hr'];
+  const availableTimeframes = ['1m', '5m', '10m', '15m', '30m', '60m'];
   const selectedTimeframes = user.trendSettings.timeframes || ['1m']; 
 
   const timeframeKeyboard = {
