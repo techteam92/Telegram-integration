@@ -10,7 +10,6 @@ const billingInfoHandler = require('./handlers/billingInfoHandler');
 const platformAccountHandler = require('./handlers/platformAccountHandler');
 const accountInfoHandler = require('./handlers/accountInfoHandler');
 const startMessage = require('./messages/startMessage');
-const { start } = require('pm2');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 const mainMenuKeyboard = {
@@ -33,6 +32,10 @@ const startMenuKeyboard = {
   },
 };
 
+bot.setMyCommands([
+  { command: '/start', description: 'Getting started with solo trend bot' }
+]);
+
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username || 'Anonymous';  
@@ -45,6 +48,8 @@ bot.onText(/\/start/, async (msg) => {
     });
   }
   await bot.sendMessage(chatId, startMessage(), startMenuKeyboard);
+  await bot.sendMessage(chatId, 'On right side of your Message tab you can access the trend bot menu', mainMenuKeyboard);
+
 });
 
 bot.on('message', async (msg) => {

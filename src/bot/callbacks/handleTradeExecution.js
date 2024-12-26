@@ -1,6 +1,7 @@
 const { isSignalValid } = require('../../api/signals/service/signal.service');
 const userService = require('../../api/user/service/user.service');
 const novusServices = require('../../api/novus/services/novus.service');
+const { generateOrderCode } = require('../../common/utils/orderCode');
 
 const handleTradeExecution = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -17,18 +18,21 @@ const handleTradeExecution = async (bot, callbackQuery) => {
       return bot.sendMessage(chatId, '❌ Unable to execute trade: No active account or token found.', { parse_mode: 'html' });
     }
     const tradeUnits = await userService.getUserTradeUnits(chatId);
-    const tpPrice = action === 'tp1' ? signal.tp_lg : action === 'tp2' ? signal.tp_sh : signal.tp_sh; 
-    const orderRequest = {
+    const tpPrice = action === 'tp1' ? signal.tp1 : action === 'tp2' ? signal.tp2 : signal.tp3; 
+    const orderCode = generateOrderCode(activeAccountId);
+    const orderRequest = JSON.stringify({
       account: activeAccountId,
+      orderCode: orderCode,
       type: 'MARKET',
       instrument: signal.symbol,
       quantity: parseFloat(tradeUnits), 
       positionEffect: 'OPEN',
       side: signal.buy ? 'BUY' : 'SELL',
       limitPrice: tpPrice,
-      stopPrice: signal.pivlow || signal.pivhigh, 
+      stopPrice: signal.sl, 
       tif: 'DAY',
-    };
+    });
+    console.log(orderRequest);
     await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
     await bot.sendMessage(chatId, `✅ Trade executed for TP${action.slice(-1)} at ${tpPrice}!`, { parse_mode: 'html' });
   } catch (error) {

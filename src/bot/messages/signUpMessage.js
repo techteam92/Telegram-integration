@@ -9,7 +9,7 @@ Here’s what you’ll receive:
 To maximize your results, sign up with one of our trusted brokers: 
 • SWAY MARKETS: <a href="https://my.swaymarkets.com/auth/register?partner_code=2647833">Register Here</a> 
 • NOVUS MARKETS: <a href="https://broker.novusmarkets.io/auth/login">Register Here</a>
-For Subscription, use keyboard menu to subscribe.
+For Subscription, use the trend bot menu on right side of your message tab.
 `;
 };
   
