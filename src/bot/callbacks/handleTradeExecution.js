@@ -2,6 +2,7 @@ const { isSignalValid } = require('../../api/signals/service/signal.service');
 const userService = require('../../api/user/service/user.service');
 const novusServices = require('../../api/novus/services/novus.service');
 const { generateOrderCode } = require('../../common/utils/orderCode');
+const { createOrder } = require('../../api/orders/services/order.service');
 
 const handleTradeExecution = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -20,20 +21,22 @@ const handleTradeExecution = async (bot, callbackQuery) => {
     const tradeUnits = await userService.getUserTradeUnits(chatId);
     const tpPrice = action === 'tp1' ? signal.tp1 : action === 'tp2' ? signal.tp2 : signal.tp3; 
     const orderCode = generateOrderCode(activeAccountId);
+    const tradeQuantity = parseFloat(tradeUnits) * 100000;
     const orderRequest = JSON.stringify({
       account: activeAccountId,
       orderCode: orderCode,
       type: 'MARKET',
       instrument: signal.symbol,
-      quantity: parseFloat(tradeUnits), 
+      quantity: tradeQuantity, 
       positionEffect: 'OPEN',
       side: signal.buy ? 'BUY' : 'SELL',
-      limitPrice: tpPrice,
-      stopPrice: signal.sl, 
+      limitPrice: Number(tpPrice.toFixed(5)),
+      stopPrice: Number(signal.sl.toFixed(5)), 
       tif: 'DAY',
     });
-    console.log(orderRequest);
-    await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
+    console.log(orderRequest);    
+    const novusOrder = await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
+    const orderPlaced = await createOrder(user._id, orderCode, activeAccountId, user.activePlatform, novusOrder.orderId, signalId);
     await bot.sendMessage(chatId, `✅ Trade executed for TP${action.slice(-1)} at ${tpPrice}!`, { parse_mode: 'html' });
   } catch (error) {
     console.log(`Error executing trade: ${error}`);

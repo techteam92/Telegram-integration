@@ -147,6 +147,7 @@ const formatOrderHistory = (orderHistory) => {
     const leg = order.legs[0] || {};
     const execution = order.executions[0] || {};
     return `
+<b>Order Id:</b> ${order.orderId}
 <b>Order Code:</b> ${order.orderCode}
 <b>Type:</b> ${order.type}
 <b>Instrument:</b> ${order.instrument}
@@ -160,6 +161,7 @@ const formatOrderHistory = (orderHistory) => {
 <b>Filled Quantity:</b> ${leg.filledQuantity || 'N/A'}
 <b>Remaining Quantity:</b> ${leg.remainingQuantity || 'N/A'}
 <b>Average Price:</b> ${leg.averagePrice || '0.00'}
+<b>Order Price:</b> ${leg.price || '0.00'}
 <b>Execution Status:</b> ${execution.status || 'N/A'}
 <b>Reject Reason:</b> ${execution.rejectReason || 'N/A'}
 -------------------------------------------------------------------------------

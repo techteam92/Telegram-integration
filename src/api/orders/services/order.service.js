@@ -1,4 +1,4 @@
-const Order = require('./models/order');
+const Order = require('../models/orders.models');
 
 const createOrder = async (userId, orderCode, accountId, platformName, orderId, updateOrderId, signalId) => {
   try {

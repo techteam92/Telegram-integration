@@ -207,7 +207,7 @@ const getOrderHistory = async (account, authorizationHeader, filters = {}) => {
   const url = `${ORDER_URL}/${encodeURIComponent(account)}/orders/history`;
 
   const defaultParams = {
-    limit: 9,
+    limit: 5,
     page: 1,
   };
 
