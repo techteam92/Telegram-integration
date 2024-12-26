@@ -6,6 +6,7 @@ const { toggleTimeframe } = require('./toggleTimeframeCallback');
 const { toggleCurrencyPair } = require('./toggleCurrencyPairCallback'); 
 const { managePlatformAccounts, setActivePlatformAccount } = require('./platformCallbackHandler');
 const handleAccountInfoCallback = require('./accountInfoCallbacks');
+const handleTradeExecution = require('./handleTradeExecution');
 
 module.exports = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -49,6 +50,10 @@ module.exports = async (bot, callbackQuery) => {
         return handleAccountInfoCallback(bot, chatId, data);
       }
       
+      case data.startsWith('trade_tp'): { 
+        return handleTradeExecution(bot, callbackQuery);
+      }
+
       default:
         await bot.sendMessage(chatId, 'Invalid action. Please try again.');
     }

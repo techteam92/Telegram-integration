@@ -1,6 +1,6 @@
 const { isSignalValid } = require('../../api/signals/service/signal.service');
 const userService = require('../../api/user/service/user.service');
-const { submitOrder } = require('../../novus/services/novus.service');
+const novusServices = require('../../api/novus/services/novus.service');
 
 const handleTradeExecution = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
@@ -30,7 +30,7 @@ const handleTradeExecution = async (bot, callbackQuery) => {
       stopPrice: signal.pivlow || signal.pivhigh, 
       tif: 'DAY',
     };
-    await submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
+    await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
     await bot.sendMessage(chatId, `✅ Trade executed for TP${action.slice(-1)} at ${tpPrice}!`, { parse_mode: 'html' });
   } catch (error) {
     console.log(`Error executing trade: ${error}`);
