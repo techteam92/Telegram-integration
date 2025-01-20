@@ -37,7 +37,7 @@ const handleTradeExecution = async (bot, callbackQuery) => {
     console.log(orderRequest);    
     const novusOrder = await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
     const orderPlaced = await createOrder(user._id, orderCode, activeAccountId, user.activePlatform, novusOrder.orderId, signalId);
-    await bot.sendMessage(chatId, `✅ Trade executed for TP${action.slice(-1)} at ${tpPrice}!`, { parse_mode: 'html' });
+    await bot.sendMessage(chatId, `✅ ${signal.symbol} trade executed for TP${action.slice(-1)} at ${tpPrice.toFixed(3)}!`, { parse_mode: 'html' });
   } catch (error) {
     console.log(`Error executing trade: ${error}`);
     await bot.sendMessage(chatId, '❌ Failed to execute trade. Please try again later.', { parse_mode: 'html' });
