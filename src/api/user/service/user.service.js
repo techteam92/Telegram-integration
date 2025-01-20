@@ -3,6 +3,7 @@ const logger = require('../../../common/utils/logger');
 const Platform = require('../model/platform.model');
 const User = require('../model/user.model');
 const httpStatus = require('http-status');
+const novusService = require('../../novus/services/novus.service');
 
 const createUser = async (userBody) => {
   if (await User.findOne({ telegramId: userBody.telegramId })) {
@@ -265,14 +266,12 @@ const getActivePlatformDetails = async (userId, platformName) => {
   try {
     const platform = await Platform.findOne({ userId, platformName });
     if (!platform || !platform.accessToken) {
-      throw new Error(`Platform data not found or access token missing for user ID: ${userId}`);
+      return false;
     }
-
     const activeAccount = platform.accounts.find((account) => account.isActive);
     if (!activeAccount) {
-      throw new Error(`No active account found for platform: ${platformName}`);
+      return false;
     }
-
     return {
       accessToken: platform.accessToken,
       activeAccountId: activeAccount.accountId,
@@ -283,6 +282,43 @@ const getActivePlatformDetails = async (userId, platformName) => {
   }
 };
 
+const updatePlatformCredentials = async (telegramId, platformName, username, password) => {
+  try {
+    const user = await User.findOne({ telegramId });
+    if (!user) throw new Error(`User not found for Telegram ID: ${telegramId}`);
+    const userId = user._id;
+    const platform = await Platform.findOneAndUpdate(
+      { userId, platformName },
+      { username, password },
+      { new: true, upsert: true }
+    );
+    return platform;
+  } catch (error) {
+    console.error(`Error updating platform credentials: ${error.message}`);
+    throw error;
+  }
+};
+
+const refreshPlatformAccessToken = async (userId, platformName) => {
+  try {
+    const platform = await Platform.findOne({ userId, platformName });
+    if (!platform) throw new Error(`Platform not found for user ID: ${userId} and platform: ${platformName}`);
+    const { username, password } = platform;
+    if (!username || !password) {
+      throw new Error('Username and password are required to refresh the access token.');
+    }
+    const decryptedPassword = password; 
+    const sessionToken = await novusService.loginUser(username, 'default', decryptedPassword);
+    platform.accessToken = sessionToken;
+    platform.tokenExpiry = new Date(Date.now() + 30 * 60 * 1000); 
+    await platform.save();
+    console.log(`${username}'s Access token refreshed successfully for platform ${platformName}.`);
+    return platform;
+  } catch (error) {
+    console.error(`Error refreshing access token: ${error.message}`);
+    throw error;
+  }
+};
 
 
 module.exports = {
@@ -308,5 +344,7 @@ module.exports = {
   createOrUpdatePlatform,
   checkPlatformAccount,
   updatePlatformAccounts,
-  getActivePlatformDetails
+  getActivePlatformDetails,
+  updatePlatformCredentials,
+  refreshPlatformAccessToken
 };

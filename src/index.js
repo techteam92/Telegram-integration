@@ -7,35 +7,32 @@ const fs = require('fs');
 const https = require('https');
 require('./bot/bot');
 const startSubscriptionCheckJob = require('./jobs/subscriptionJob');
-const signalJob = require('./jobs/signalJob')
+const { scheduleTokenRefreshJob } = require('./jobs/accesstokenJob');
 
-const indexFunction = () => {
-  let server;
-  mongoose.connect(config.mongoose.url, config.mongoose.options)
-    .then(() => {
-      logger.info('Connected to MongoDB: ' + config.mongoose.url);      
-      if (config.env === constant.STAGING_DEV_ENV || config.env === constant.PROD_DEV_ENV) {
-        const sslOptions = {
-          key: fs.readFileSync(config.ssl.privKey),
-          cert: fs.readFileSync(config.ssl.fullChainKey)
-        };
-        server = https.createServer(sslOptions, app).listen(config.port, () => {
-          logger.info(`Listening to port ${config.port} (HTTPS)`);
-          logger.info(`Server URL: ${config.url}/api/v1`);
-        });
-      } else {
-        server = app.listen(config.port, () => {
-          logger.info(`Listening to port ${config.port}`);
-          logger.info(`Server URL: ${config.url}/api/v1`);
-        });
-      }
-      // signalJob()
-      startSubscriptionCheckJob()
-    })
-    .catch(err => {
-      logger.error('Error connecting to MongoDB: ', err);
+const createHttpsServer = (app, config) => {
+  const sslOptions = {
+    key: fs.readFileSync(config.ssl.privKey),
+    cert: fs.readFileSync(config.ssl.fullChainKey)
+  };
+  return https.createServer(sslOptions, app);
+};
+
+const setupServer = (app, config) => {
+  if (config.env === constant.STAGING_DEV_ENV || config.env === constant.PROD_DEV_ENV) {
+    const server = createHttpsServer(app, config);
+    return server.listen(config.port, () => {
+      logger.info(`Listening to port ${config.port} (HTTPS)`);
+      logger.info(`Server URL: ${config.url}/api/v1`);
     });
+  }
+  
+  return app.listen(config.port, () => {
+    logger.info(`Listening to port ${config.port}`);
+    logger.info(`Server URL: ${config.url}/api/v1`);
+  });
+};
 
+const setupProcessHandlers = (server) => {
   const exitHandler = () => {
     if (server) {
       server.close(() => {
@@ -53,7 +50,6 @@ const indexFunction = () => {
   });
 
   process.on('unhandledRejection', (error) => {
-    // console.log("error: ", error);
     logger.error(`Unhandled Rejection: ${error.message}`, { stack: error.stack });
     exitHandler();
   });
@@ -64,5 +60,20 @@ const indexFunction = () => {
   });
 };
 
-module.exports = indexFunction;
+const indexFunction = async () => {
+  try {
+    await mongoose.connect(config.mongoose.url, config.mongoose.options);
+    logger.info('Connected to MongoDB: ' + config.mongoose.url);
 
+    const server = setupServer(app, config);
+    setupProcessHandlers(server);
+
+    scheduleTokenRefreshJob();
+    startSubscriptionCheckJob();
+  } catch (err) {
+    logger.error('Error connecting to MongoDB: ', err);
+    process.exit(1);
+  }
+};
+
+module.exports = indexFunction;

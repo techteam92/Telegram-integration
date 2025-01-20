@@ -3,7 +3,7 @@ const userService = require('../../api/user/service/user.service');
 exports.toggleCurrencyPair = async (bot, chatId, currencyPair) => {
   try {
     const user = await userService.getUserByTelegramId(chatId);
-    const availableCurrencyPairs = ['USDJPY', 'EURUSD', 'GBPUSD', 'AUDUSD', 'USDCHF', 'USDCAD', 'NZDUSD'];
+    const availableCurrencyPairs = ['USDJPY', 'EURUSD', 'GBPUSD', 'AUDUSD', 'USDCHF', 'USDCAD', 'NZDUSD', 'AUDCAD', 'AUDCHF', 'EURJPY', 'GBPGPY', 'NAS100', 'US30', 'XAUUSD', 'GER30', 'BTCUSD', 'GBPCAD', 'GBPNZD']
     let updatedCurrencyPairs = user.trendSettings.currencyPairs || ['USDJPY', 'EURUSD'];
     if (updatedCurrencyPairs.includes(currencyPair)) {
       updatedCurrencyPairs = updatedCurrencyPairs.filter((pair) => pair !== currencyPair);
@@ -12,7 +12,7 @@ exports.toggleCurrencyPair = async (bot, chatId, currencyPair) => {
     }
     if (updatedCurrencyPairs.length === 0) {
       updatedCurrencyPairs = ['USDJPY', 'EURUSD'];
-      await bot.sendMessage(chatId, '⚠️ You must select at least one timeframe. Defaulting to *EURUSD*, *USDJPY*.', { parse_mode: 'Markdown' });
+      await bot.sendMessage(chatId, '⚠️ You must select at least one pair. Defaulting to *EURUSD*, *USDJPY*.', { parse_mode: 'Markdown' });
     }
     updatedCurrencyPairs = updatedCurrencyPairs.filter((pair) => availableCurrencyPairs.includes(pair));
 

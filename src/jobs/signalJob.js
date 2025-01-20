@@ -5,9 +5,8 @@ const userService = require('../api/user/service/user.service');
 const logger = require('../common/utils/logger');
 
 async function signalJob() {
-  cron.schedule('*/1 * * * *', async () => {
+  cron.schedule('* * * * *', async () => {
     console.log('Running signal cron job...');
-
     try {
       const signal = await fetchSignalData();
 

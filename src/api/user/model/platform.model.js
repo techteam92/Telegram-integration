@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { decrypt, encrypt } = require('../../../common/utils/encrypt-decrypt');
 
 const platformSchema = new mongoose.Schema(
   {
@@ -19,6 +20,16 @@ const platformSchema = new mongoose.Schema(
         isActive: { type: Boolean, default: false },
       },
     ],
+    username: {
+      type: String,
+      default: null,
+    },
+    password: {
+      type: String, 
+      default: null,
+      get: decrypt, 
+      set: encrypt
+    },
     accessToken: { 
       type: String, 
       default: null 
@@ -30,6 +41,9 @@ const platformSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+platformSchema.set('toJSON', { getters: true });
+platformSchema.set('toObject', { getters: true });
 
 const Platform = mongoose.model('Platform', platformSchema);
 module.exports = Platform;

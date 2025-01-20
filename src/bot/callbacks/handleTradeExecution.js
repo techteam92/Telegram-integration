@@ -13,10 +13,10 @@ const handleTradeExecution = async (bot, callbackQuery) => {
     if (!validity) {
       return bot.sendMessage(chatId, '🚫 Signal expired and not reliable.', { parse_mode: 'html' });
     }
-    const user = await userService.getUserByTelegramId(chatId);
+    const user = await userService.getUserByTelegramId(chatId); 
     const { accessToken, activeAccountId } = await userService.getActivePlatformDetails(user._id, user.activePlatform);
     if (!accessToken || !activeAccountId) {
-      return bot.sendMessage(chatId, '❌ Unable to execute trade: No active account or token found.', { parse_mode: 'html' });
+      return bot.sendMessage(chatId, '❌ Unable to execute trade: No active account or token found, please select your account from menu.', { parse_mode: 'html' });
     }
     const tradeUnits = await userService.getUserTradeUnits(chatId);
     const tpPrice = action === 'tp1' ? signal.tp1 : action === 'tp2' ? signal.tp2 : signal.tp3; 
@@ -30,8 +30,8 @@ const handleTradeExecution = async (bot, callbackQuery) => {
       quantity: tradeQuantity, 
       positionEffect: 'OPEN',
       side: signal.buy ? 'BUY' : 'SELL',
-      limitPrice: Number(tpPrice.toFixed(5)),
-      stopPrice: Number(signal.sl.toFixed(5)), 
+      limitPrice: Number(tpPrice.toFixed(3)),
+      stopPrice: Number(signal.sl.toFixed(3)), 
       tif: 'DAY',
     });
     console.log(orderRequest);    

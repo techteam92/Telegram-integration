@@ -46,6 +46,7 @@ const handleNovusLoginInput = async (bot, msg, chatId) => {
       );
     }
     const userId = user._id;
+    await userService.updatePlatformCredentials(chatId, 'Novus', username, password);
     await userService.createOrUpdatePlatform(
       userId,
       'Novus',

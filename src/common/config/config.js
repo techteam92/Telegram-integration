@@ -6,6 +6,9 @@ const config = {
   get env() {
     return process.env.NODE_ENV;
   },
+  get encryptionKey() {
+    return process.env.ENCRYPTION_KEY;
+  },
   get port() {
     return process.env.PORT;
   },
@@ -16,40 +19,39 @@ const config = {
     return process.env.HASH_ROUNDS;
   },
   get copperxApikey() {
-    return process.env.COPPERXAPIKEY
-  }
-  ,
+    return process.env.COPPERXAPIKEY;
+  },
   get botToken() {
-    return process.env.BOT_TOKEN
+    return process.env.BOT_TOKEN;
   },
   get tgGroupLink() {
-    return process.env.TG_GROUP_LINK
+    return process.env.TG_GROUP_LINK;
   },
   get groupChatId() {
-    return process.env.GROUP_CHAT_ID
+    return process.env.GROUP_CHAT_ID;
   },
   nodeMailer: {
-  get email() {
-    return process.env.EMAIL;
+    get email() {
+      return process.env.EMAIL;
+    },
+    get pass() {
+      return process.env.PASS;
+    },
   },
-  get pass() {
-    return process.env.PASS;
-  }
- },
   ssl: {
     get privKey() {
       return process.env.SSL_PRIV_KEY;
     },
     get fullChainKey() {
       return process.env.SSL_FULLCHAIN_KEY;
-    }
+    },
   },
   s3: {
-    get AWS_ACCESS_KEY_ID () {
-      return process.env.AWS_ACCESS_KEY_ID
+    get AWS_ACCESS_KEY_ID() {
+      return process.env.AWS_ACCESS_KEY_ID;
     },
-    get AWS_SECRET_ACCESS_KEY () {
-      return process.env.AWS_SECRET_ACCESS_KEY
+    get AWS_SECRET_ACCESS_KEY() {
+      return process.env.AWS_SECRET_ACCESS_KEY;
     },
   },
   mongoose: {
@@ -90,10 +92,10 @@ const config = {
     },
     get verifyEmailExpirationMinutes() {
       return process.env.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES;
-    }
+    },
   },
   get aesEncryptDcryptKey() {
-    return process.env.ENCRYPTION_KEY
+    return process.env.ENCRYPTION_KEY;
   },
   s3: {
     get AWS_S3_KEY() {
@@ -104,43 +106,43 @@ const config = {
     },
     get AWS_S3_SECRET() {
       return process.env.AWS_S3_SECRET;
-    }
+    },
   },
   collections: {
     get users() {
-      return "users";
+      return 'users';
     },
     get token() {
-      return "tokens";
+      return 'tokens';
     },
     get interests() {
-      return "interests"
+      return 'interests';
     },
     get plugs() {
-      return "communities";
+      return 'communities';
     },
     get reactions() {
-      return "reactions";
+      return 'reactions';
     },
     get notification() {
-      return "notification";
+      return 'notification';
     },
     get admin() {
-      return "admins";
+      return 'admins';
     },
     get profile() {
-      return "profiles";
+      return 'profiles';
     },
     get verification() {
       return 'verifications';
     },
     get notification() {
-      return "notifications";
+      return 'notifications';
     },
     get callLogs() {
-      return "calllogs";
+      return 'calllogs';
     },
   },
 };
 
-module.exports = config
+module.exports = config;

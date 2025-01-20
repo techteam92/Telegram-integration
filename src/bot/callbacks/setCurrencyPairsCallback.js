@@ -1,5 +1,5 @@
 module.exports = async (bot, chatId, user) => {
-    const availableCurrencyPairs = ['USDJPY', 'EURUSD', 'GBPUSD', 'AUDUSD', 'USDCHF', 'USDCAD', 'NZDUSD'];
+    const availableCurrencyPairs = ['USDJPY', 'EURUSD', 'GBPUSD', 'AUDUSD', 'USDCHF', 'USDCAD', 'NZDUSD', 'AUDCAD', 'AUDCHF', 'EURJPY', 'GBPGPY', 'NAS100', 'US30', 'XAUUSD', 'GER30', 'BTCUSD', 'GBPCAD', 'GBPNZD'];
     const selectedCurrencyPairs = user.trendSettings.currencyPairs || ['USDJPY', 'EURUSD'];
   
     const currencyPairKeyboard = {
@@ -19,5 +19,4 @@ module.exports = async (bot, chatId, user) => {
       parse_mode: 'Markdown',
       ...currencyPairKeyboard,
     });
-  };
-  
+  };  
