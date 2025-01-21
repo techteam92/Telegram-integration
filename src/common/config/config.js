@@ -7,7 +7,7 @@ const config = {
     return process.env.NODE_ENV;
   },
   get encryptionKey() {
-    return process.env.ENCRYPTION_KEY;
+    return process.env.PLATFORM_ENCRYPTION_KEY;
   },
   get port() {
     return process.env.PORT;
