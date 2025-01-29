@@ -30,8 +30,15 @@ const handleTradeExecution = async (bot, callbackQuery) => {
       quantity: tradeQuantity, 
       positionEffect: 'OPEN',
       side: signal.buy ? 'BUY' : 'SELL',
-      limitPrice: Number(tpPrice.toFixed(3)),
-      stopPrice: Number(signal.sl.toFixed(3)), 
+      limitPrice: Number(signal.price.toFixed(3)),
+      protectionOrder: {
+        takeProfit: {
+          limitPrice: Number(tpPrice.toFixed(3)),
+        },
+        stopLoss: {
+          limitPrice: Number(signal.sl.toFixed(3)),
+        },
+      }, 
       tif: 'DAY',
     });
     console.log(orderRequest);    

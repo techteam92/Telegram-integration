@@ -47,7 +47,7 @@ bot.onText(/\/start/, async (msg) => {
       subscriptionStatus: 'inactive',
     });
   }
-  await bot.sendMessage(chatId, startMessage(), startMenuKeyboard);
+  await bot.sendMessage(chatId, startMessage(), { parse_mode: 'HTML', ...startMenuKeyboard });
   await bot.sendMessage(chatId, 'On right side of your Message tab you can access the trend bot menu', mainMenuKeyboard);
 
 });
