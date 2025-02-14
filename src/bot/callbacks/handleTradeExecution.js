@@ -25,7 +25,7 @@ const handleTradeExecution = async (bot, callbackQuery) => {
     const orderRequest = JSON.stringify({
       account: activeAccountId,
       orderCode: orderCode,
-      type: 'MARKET',
+      type: 'LIMIT',
       instrument: signal.symbol,
       quantity: tradeQuantity, 
       positionEffect: 'OPEN',
@@ -41,7 +41,6 @@ const handleTradeExecution = async (bot, callbackQuery) => {
       }, 
       tif: 'DAY',
     });
-    console.log(orderRequest);    
     const novusOrder = await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
     const orderPlaced = await createOrder(user._id, orderCode, activeAccountId, user.activePlatform, novusOrder.orderId, signalId);
     await bot.sendMessage(chatId, `✅ ${signal.symbol} trade executed for TP${action.slice(-1)} at ${tpPrice.toFixed(3)}!`, { parse_mode: 'html' });
