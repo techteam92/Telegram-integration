@@ -4,6 +4,7 @@ const createOrder = async (userId, orderCode, accountId, platformName, orderId, 
   try {
     const newOrder = new Order({
       orderId,
+      signalId,
       updateOrderId,
       orderCode,
       userId,

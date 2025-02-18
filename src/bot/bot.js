@@ -9,7 +9,7 @@ const unsubscribeHandler = require('./handlers/unsubscribeHandler');
 const billingInfoHandler = require('./handlers/billingInfoHandler');
 const platformAccountHandler = require('./handlers/platformAccountHandler');
 const accountInfoHandler = require('./handlers/accountInfoHandler');
-const startMessage = require('./messages/startMessage');
+const sendSignupVideo = require('./messages/startMessage');
 const bot = new TelegramBot(config.botToken, { polling: true });
 
 const mainMenuKeyboard = {
@@ -38,6 +38,7 @@ bot.setMyCommands([
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
+  console.log(`Received message from user: ${msg.chat.id}`);
   const username = msg.from.username || 'Anonymous';  
   const user = await userService.getUserByTelegramId(chatId.toString());
   if (!user) {
@@ -47,16 +48,37 @@ bot.onText(/\/start/, async (msg) => {
       subscriptionStatus: 'inactive',
     });
   }
-  await bot.sendMessage(chatId, startMessage(), { parse_mode: 'HTML', ...startMenuKeyboard });
+  await sendSignupVideo(bot, chatId, startMenuKeyboard.reply_markup);
   await bot.sendMessage(chatId, 'On right side of your Message tab you can access the trend bot menu', mainMenuKeyboard);
 
 });
+
+bot.onText(/\/grant_sub/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  console.log(`Received grant_sub command from user: ${chatId}`);
+  try {
+    const user = await userService.getUserByTelegramId(chatId);    
+    if (!user) {
+      return bot.sendMessage(`❌ User with Telegram ID ${chatId} not found.`);
+    }
+    let newExpiryDate = new Date();
+    newExpiryDate.setFullYear(newExpiryDate.getFullYear() + 1);
+    await userService.updateUserSubscriptionStatus(chatId, 'active', newExpiryDate, 'Annually');
+    await bot.sendMessage(chatId, `✅ Subscription updated for @${user.username} (${chatId}) until ${newExpiryDate.toDateString()}.`);
+    await bot.sendMessage(user.telegramId, `🎉 Your subscription has been activated for 1 year! Enjoy SOLOTREND X Alerts. 🚀`);
+
+  } catch (error) {
+    console.error(`Error updating subscription: ${error}`);
+    await bot.sendMessage(chatId, "❌ Failed to update subscription. Please try again later.");
+  }
+});
+
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username || 'Anonymous';
 
-  if (msg.text.startsWith('/')) return;
+  if (!msg.text || msg.text.startsWith('/')) return;
 
   let user = await userService.getUserByTelegramId(chatId.toString());
   if (!user) {

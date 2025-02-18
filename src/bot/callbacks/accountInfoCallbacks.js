@@ -48,6 +48,7 @@ const handleAccountInfoCallback = async (bot, chatId, callbackData) => {
 
       case 'open_orders': {
         const openOrders = await novusService.getOpenOrders(accountId, `DXAPI ${accessToken}`);
+        console.log('Open Orders:', openOrders);
         responseMessage = formatOpenOrders(openOrders);
         break;
       }

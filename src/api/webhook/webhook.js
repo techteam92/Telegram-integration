@@ -41,8 +41,7 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 
     await userService.updateUserSubscriptionStatus(user.telegramId, 'active', newExpiryDate, subscriptionPlan);
     logger.info(`User ${user.telegramId} subscription updated to ${subscriptionPlan}.`);
-
-    await bot.sendMessage(user.telegramId, subscriptionSuccessMessage(newExpiryDate));
+    await subscriptionSuccessMessage(bot, user.telegramId, newExpiryDate);
     return res.status(200).send('Subscription status updated');
   } catch (error) {
     logger.error(`Error processing Copperx webhook: ${error}`);
@@ -53,6 +52,8 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 router.post('/signals', async (req, res) => {
   try {
     let signal = req.body;
+    console.log("data: ", signal)
+    console.log("data type: ", typeof signal)
     signal = JSON.parse(cleanJSON(signal))
     await signalService.SignalManager(bot, signal);
     res.status(200).json({ message: 'Signal processed successfully' });

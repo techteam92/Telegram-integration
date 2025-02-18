@@ -23,24 +23,43 @@ const handleTradeExecution = async (bot, callbackQuery) => {
     const orderCode = generateOrderCode(activeAccountId);
     const tradeQuantity = parseFloat(tradeUnits) * 100000;
     const orderRequest = JSON.stringify({
-      account: activeAccountId,
-      orderCode: orderCode,
-      type: 'LIMIT',
-      instrument: signal.symbol,
-      quantity: tradeQuantity, 
-      positionEffect: 'OPEN',
-      side: signal.buy ? 'BUY' : 'SELL',
+      directExchange: false,
+      legs: [
+        {
+          instrumentId: null, 
+          positionEffect: 'OPENING',
+          ratioQuantity: 1,
+          symbol: signal.symbol,
+        },
+      ],
       limitPrice: Number(signal.price.toFixed(3)),
-      protectionOrder: {
-        takeProfit: {
-          limitPrice: Number(tpPrice.toFixed(3)),
-        },
-        stopLoss: {
-          limitPrice: Number(signal.sl.toFixed(3)),
-        },
-      }, 
-      tif: 'DAY',
+      orderSide: signal.buy ? 'BUY' : 'SELL', 
+      orderType: 'MARKET',
+      quantity: tradeQuantity,
+      requestId: orderCode,
+      stopLoss: {
+        fixedOffset: Math.abs(signal.price - signal.sl), 
+        fixedPrice: Number(signal.sl.toFixed(3)),
+        orderChainId: 0,
+        orderId: 0,
+        orderType: 'STOP',
+        priceFixed: true,
+        quantityForProtection: tradeQuantity,
+        removed: false,
+      },
+      takeProfit: {
+        fixedOffset: Math.abs(signal.price - tpPrice),
+        fixedPrice: Number(tpPrice.toFixed(3)), 
+        orderChainId: 0,
+        orderId: 0,
+        orderType: 'LIMIT',
+        priceFixed: true,
+        quantityForProtection: tradeQuantity,
+        removed: false,
+      },
+      timeInForce: 'GTC', 
     });
+    console.log(`Order request: ${orderRequest}`);
     const novusOrder = await novusServices.submitOrder(activeAccountId, `DXAPI ${accessToken}`, orderRequest);
     const orderPlaced = await createOrder(user._id, orderCode, activeAccountId, user.activePlatform, novusOrder.orderId, signalId);
     await bot.sendMessage(chatId, `✅ ${signal.symbol} trade executed for TP${action.slice(-1)} at ${tpPrice.toFixed(3)}!`, { parse_mode: 'html' });

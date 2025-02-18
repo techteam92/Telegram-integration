@@ -63,7 +63,7 @@ module.exports = async (bot, callbackQuery) => {
         await bot.sendMessage(chatId, 'Invalid action. Please try again.');
     }
   } catch (error) {
-    console.error(`Error handling callback: ${error.message}`);
+    console.log(`Error handling callback: ${error.message}`);
     await bot.sendMessage(chatId, 'An error occurred. Please try again later.');
   }
 };

@@ -30,6 +30,12 @@ const config = {
   get groupChatId() {
     return process.env.GROUP_CHAT_ID;
   },
+  get startMessageVideoFileId() {
+    return process.env.START_MESSAGE_VIDEO_FILE_ID;
+  },
+  get subscriptionSuccessMessageVideoFileId() {
+    return process.env.SUBSCRIPTION_SUCCESS_MESSAGE_VIDEO_FILE_ID;
+  },
   nodeMailer: {
     get email() {
       return process.env.EMAIL;
