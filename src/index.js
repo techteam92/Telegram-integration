@@ -68,7 +68,7 @@ const indexFunction = async () => {
     const server = setupServer(app, config);
     setupProcessHandlers(server);
 
-    scheduleTokenRefreshJob();
+    // scheduleTokenRefreshJob();
     startSubscriptionCheckJob();
   } catch (err) {
     logger.error('Error connecting to MongoDB: ', err);

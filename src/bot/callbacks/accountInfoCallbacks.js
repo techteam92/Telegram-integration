@@ -64,11 +64,10 @@ const handleAccountInfoCallback = async (bot, chatId, callbackData) => {
     }
     await bot.sendMessage(chatId, responseMessage, { parse_mode: 'HTML' });
   } catch (error) {
-    console.error(`Error handling account info callback: ${error.message}`);
     if (error.message.includes('Authorization required')) {
       await bot.sendMessage(chatId, 'Your Novus account token has expired. Please reconnect your account.', { parse_mode: 'HTML' });
     } else {
-      await bot.sendMessage(chatId, 'An error occurred. Please try again later.');
+      await bot.sendMessage(chatId, error.message);
     }
   }
 };
