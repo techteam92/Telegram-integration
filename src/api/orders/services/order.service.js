@@ -12,10 +12,8 @@ const createOrder = async (userId, orderCode, accountId, platformName, orderId, 
       platformName,
     });
     await newOrder.save();
-    console.log('Order created successfully:', newOrder);
     return newOrder;
   } catch (error) {
-    console.error('Error creating order:', error);
     throw error;
   }
 };

@@ -52,13 +52,10 @@ router.post('/copperx/paymentStatus', async (req, res) => {
 router.post('/signals', async (req, res) => {
   try {
     let signal = req.body;
-    console.log("data: ", signal)
-    console.log("data type: ", typeof signal)
     signal = JSON.parse(cleanJSON(signal))
     await signalService.SignalManager(bot, signal);
     res.status(200).json({ message: 'Signal processed successfully' });
   } catch (error) {
-    console.log(`Error in webhook handler: ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

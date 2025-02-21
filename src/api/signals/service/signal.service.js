@@ -62,7 +62,7 @@ const isSignalValid = async (signalId) => {
       throw new Error('Signal not found');
     }
     const currentTime = new Date();
-    const validity = currentTime - signal.createdAt <= 10 * 60 * 1000;
+    const validity = currentTime - signal.createdAt <= 30 * 60 * 1000;
     return { signal, validity };
   } catch (error) {
     console.error(`Error checking signal validity: ${error.message}`);
