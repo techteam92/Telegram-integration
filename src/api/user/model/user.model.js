@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    ClickAction: {
+      type: String,
+      required: true,
+    },
     subscriptionStatus: {
       type: String,
       required: true,

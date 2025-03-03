@@ -3,7 +3,7 @@ const config = require('../../common/config/config');
 const sendSignupVideo = async (bot, chatId, replyMarkup) => {
   try {
     const videoFileId = config.startMessageVideoFileId;
-    await bot.sendVideo(chatId, videoFileId, {
+    await bot.sendVideo(chatId, "http://techslides.com/demos/sample-videos/small.mp4", {
       caption: `💡Welcome to SOLOTREND X Alerts!💡
 Your ultimate destination for precision trading signals with 3 Take Profit levels, Stop Loss, and real-time alerts. 🚀
 

@@ -13,6 +13,14 @@ const createUser = async (userBody) => {
   await user.save();
   return user;
 };
+const getClickAction = async (telegramId, clickAction) => {
+  console.log(telegramId, clickAction);
+  return await User.findOneAndUpdate(
+    { telegramId: telegramId },
+    { $set: { ClickAction: clickAction } },
+    { new: true }
+  ) || null;
+}
 
 const getUserByTelegramId = async (telegramId) => {
   return await User.findOne({ telegramId }) || null;
@@ -163,9 +171,9 @@ const getActivePlatformAccount = async (userId) => {
       throw new Error(`No platform details found for user with ID: ${userId} and platform: ${user.activePlatform}`);
     }
     const activeAccount = platform.accounts.find((account) => account.isActive);
-    if (!activeAccount) {
-      throw new Error(`No active account found for platform: ${user.activePlatform}`);
-    }
+    // if (!activeAccount) {
+    //   throw new Error(`No active account found for platform: ${user.activePlatform}`);
+    // }
     return {
       platformName: platform.platformName,
       activeAccount,
@@ -325,6 +333,7 @@ module.exports = {
   createUser,
   getUserByTelegramId,
   getUserByTelegramUsername,
+  getClickAction,
   updateUserSubscriptionStatus,
   getExpiredUsers,
   updateUserTradeType,

@@ -3,7 +3,11 @@ const userService = require('../../api/user/service/user.service');
 const novusServices = require('../../api/novus/services/novus.service');
 const { generateOrderCode } = require('../../common/utils/orderCode');
 const { createOrder } = require('../../api/orders/services/order.service');
+const metaTrader1 = require('../../api/mt4/mtsever');
 
+const transferOderTP1 = async(user,signal) => {
+  await userService.getClickAction(user,signal);
+}
 const handleTradeExecution = async (bot, callbackQuery) => {
   const { data, from } = callbackQuery;
   const chatId = from.id.toString();
@@ -12,19 +16,28 @@ const handleTradeExecution = async (bot, callbackQuery) => {
     const [_, action, signalId] = data.split('_');
     const { signal, validity } = await isSignalValid(signalId);
 
-    if (!validity) {
-      return bot.sendMessage(chatId, '🚫 Signal expired and not reliable.', { parse_mode: 'html' });
-    }
-
+    
     const user = await userService.getUserByTelegramId(chatId);
     const { accessToken, activeAccountId } = await userService.getActivePlatformDetails(user._id, user.activePlatform);
-
-    if (!accessToken || !activeAccountId) {
-      return bot.sendMessage(chatId, '❌ Unable to execute trade: No active account or token found. Please select your account from the menu.', { parse_mode: 'html' });
+    // await metaTrader1();
+    switch (true) {
+      case data.startsWith('trade_tp1') : {
+        await transferOderTP1(chatId,'trade1');
+        return bot.sendMessage(chatId, 'trade1', { parse_mode: 'html' });
+      }
+      case data.startsWith('trade_tp2') : {
+        await transferOderTP1(chatId,'trade2');
+        return bot.sendMessage(chatId, 'trade2', { parse_mode: 'html' });
+      }
+      case data.startsWith('trade_tp3') : {
+        await transferOderTP1(chatId,'trade3');
+        return bot.sendMessage(chatId, 'trade3', { parse_mode: 'html' });
+      }
     }
+    
 
-    const tradeUnits = await userService.getUserTradeUnits(chatId);
-    const tpPrice = action === 'tp1' ? signal.tp1 : action === 'tp2' ? signal.tp2 : signal.tp3;
+      const tradeUnits = await userService.getUserTradeUnits(chatId);
+      const tpPrice = action === 'tp1' ? signal.tp1 : action === 'tp2' ? signal.tp2 : signal.tp3;
     const orderCode = generateOrderCode(activeAccountId);
     const tradeQuantity = parseFloat(tradeUnits) * 100000;
 
@@ -89,7 +102,7 @@ const handleTradeExecution = async (bot, callbackQuery) => {
       quantity: tradeQuantity,
       side: signal.side.toUpperCase() === 'BUY' ? 'SELL' : 'BUY',
       limitPrice: Number(tpPrice.toFixed(3)),
-      tif: 'GTC', 
+      tif: 'GTC',
       positionEffect: 'CLOSE',
       positionCode: positionCode,
     };

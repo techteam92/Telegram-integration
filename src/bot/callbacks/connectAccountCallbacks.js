@@ -61,7 +61,6 @@ const handleNovusLoginInput = async (bot, msg, chatId) => {
   }
 };
 
-
 module.exports = {
   handleConnectAccount,
 };
